@@ -1,29 +1,36 @@
 use std::fmt;
 use std::ops;
 
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Vec3 {
-    e: Vec<f64>,
+    x: f64,
+    y: f64,
+    z: f64,
 }
 
 impl Vec3 {
     pub fn origin() -> Vec3 {
-        Vec3 { e: vec![0.0; 3] }
+        Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        }
     }
 
     pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
-        Vec3 { e: vec![x, y, z] }
+        Vec3 { x: x, y: y, z: z }
     }
 
     pub fn x(&self) -> f64 {
-        self.e[0]
+        self.x
     }
 
     pub fn y(&self) -> f64 {
-        self.e[1]
+        self.y
     }
 
     pub fn z(&self) -> f64 {
-        self.e[2]
+        self.z
     }
 
     pub fn len_squared(&self) -> f64 {
@@ -37,7 +44,7 @@ impl Vec3 {
 
 impl fmt::Display for Vec3 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "x: {}, y: {}, z: {}", self.e[0], self.e[1], self.e[2])
+        write!(f, "x: {}, y: {}, z: {}", self.x(), self.y(), self.z())
     }
 }
 
@@ -46,11 +53,9 @@ impl ops::Add for Vec3 {
 
     fn add(self, other: Self) -> Self {
         Vec3 {
-            e: vec![
-                self.x() + other.x(),
-                self.y() + other.y(),
-                self.z() + other.z(),
-            ],
+            x: self.x() + other.x(),
+            y: self.y() + other.y(),
+            z: self.z() + other.z(),
         }
     }
 }
@@ -58,11 +63,9 @@ impl ops::Add for Vec3 {
 impl ops::AddAssign for Vec3 {
     fn add_assign(&mut self, other: Self) {
         *self = Self {
-            e: vec![
-                self.x() + other.x(),
-                self.y() + other.y(),
-                self.z() + other.z(),
-            ],
+            x: self.x() + other.x(),
+            y: self.y() + other.y(),
+            z: self.z() + other.z(),
         };
     }
 }
@@ -72,7 +75,9 @@ impl ops::Mul<f64> for Vec3 {
 
     fn mul(self, other: f64) -> Self {
         Vec3 {
-            e: vec![self.x() * other, self.y() * other, self.z() * other],
+            x: self.x() * other,
+            y: self.y() * other,
+            z: self.z() * other,
         }
     }
 }
@@ -80,7 +85,9 @@ impl ops::Mul<f64> for Vec3 {
 impl ops::MulAssign<f64> for Vec3 {
     fn mul_assign(&mut self, other: f64) {
         *self = Self {
-            e: vec![self.x() * other, self.y() * other, self.z() * other],
+            x: self.x() * other,
+            y: self.y() * other,
+            z: self.z() * other,
         };
     }
 }
@@ -90,11 +97,9 @@ impl ops::Mul<i32> for Vec3 {
 
     fn mul(self, other: i32) -> Self {
         Vec3 {
-            e: vec![
-                self.x() * other as f64,
-                self.y() * other as f64,
-                self.z() * other as f64,
-            ],
+            x: self.x() * other as f64,
+            y: self.y() * other as f64,
+            z: self.z() * other as f64,
         }
     }
 }
@@ -102,11 +107,9 @@ impl ops::Mul<i32> for Vec3 {
 impl ops::MulAssign<i32> for Vec3 {
     fn mul_assign(&mut self, other: i32) {
         *self = Self {
-            e: vec![
-                self.x() * other as f64,
-                self.y() * other as f64,
-                self.z() * other as f64,
-            ],
+            x: self.x() * other as f64,
+            y: self.y() * other as f64,
+            z: self.z() * other as f64,
         };
     }
 }
