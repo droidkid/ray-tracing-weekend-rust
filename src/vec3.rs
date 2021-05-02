@@ -40,6 +40,14 @@ impl Vec3 {
     pub fn len(&self) -> f64 {
         self.len_squared().sqrt()
     }
+
+    pub fn unit_vector(&self) -> Vec3 {
+        return Vec3::new(
+            self.x() / self.len(),
+            self.y() / self.len(),
+            self.z() / self.len(),
+        );
+    }
 }
 
 impl fmt::Display for Vec3 {
@@ -120,6 +128,15 @@ fn origin_vector() {
     assert_eq!(origin.x(), 0.0);
     assert_eq!(origin.y(), 0.0);
     assert_eq!(origin.z(), 0.0);
+}
+
+#[test]
+fn unit_vector() {
+    let vec = Vec3::new(3.0, 0.0, 0.0);
+    let unit_vec = vec.unit_vector();
+    assert_eq!(unit_vec.x(), 1.0);
+    assert_eq!(unit_vec.y(), 0.0);
+    assert_eq!(unit_vec.z(), 0.0);
 }
 
 #[test]

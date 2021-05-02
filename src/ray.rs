@@ -13,6 +13,17 @@ impl Ray {
         }
     }
 
+    pub fn new_from_origin(direction: Vec3) -> Ray {
+        Ray {
+            origin: Vec3::origin(),
+            direction: direction,
+        }
+    }
+
+    pub fn direction(&self) -> &Vec3 {
+        return &self.direction;
+    }
+
     fn at(&self, t: f64) -> Vec3 {
         self.origin + self.direction * t
     }
@@ -20,9 +31,18 @@ impl Ray {
 
 #[test]
 fn initialize_ray() {
-    let origin = Vec3::new(0.0, 0.0, 0.0);
+    let origin = Vec3::new(0.0, 1.0, 0.0);
     let direction = Vec3::new(1.0, 1.0, 1.0);
     let ray = Ray::new(origin, direction);
+
+    assert_eq!(ray.origin, Vec3::new(0.0, 1.0, 0.0));
+    assert_eq!(ray.direction, Vec3::new(1.0, 1.0, 1.0));
+}
+
+#[test]
+fn initialize_ray_at_origin() {
+    let direction = Vec3::new(1.0, 1.0, 1.0);
+    let ray = Ray::new_from_origin(direction);
 
     assert_eq!(ray.origin, Vec3::new(0.0, 0.0, 0.0));
     assert_eq!(ray.direction, Vec3::new(1.0, 1.0, 1.0));
