@@ -6,13 +6,17 @@ pub struct Ray {
     direction: Vec3,
 }
 
-pub fn intersects_sphere(center: &Vec3, radius: f64, ray: &Ray) -> bool {
-    let oc: Vec3 = ray.origin() + center;
+pub fn intersects_sphere(center: &Vec3, radius: f64, ray: &Ray) -> Option<f64> {
+    let oc: Vec3 = ray.origin() - center;
     let a = dot(ray.direction(), ray.direction());
     let b = 2.0 * dot(&oc, ray.direction());
     let c = dot(&oc, &oc) - (radius * radius);
     let discriminant = b * b - 4.0 * a * c;
-    return discriminant > 0.0;
+    if discriminant > 0.0 {
+        Some((-b - discriminant.sqrt()) * 0.5 / a)
+    } else {
+        None
+    }
 }
 
 impl Ray {
@@ -38,8 +42,8 @@ impl Ray {
         return &self.direction;
     }
 
-    fn at(&self, t: f64) -> Vec3 {
-        (self.origin() + self.direction()) * t
+    pub fn at(&self, t: f64) -> Vec3 {
+        self.origin() + (self.direction() * t)
     }
 }
 

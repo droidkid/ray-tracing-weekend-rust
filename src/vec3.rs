@@ -69,6 +69,14 @@ impl_op_ex!(+ |a: &Vec3, b: &Vec3 | -> Vec3 {
     }
 });
 
+impl_op_ex!(- |a: &Vec3, b: &Vec3 | -> Vec3 {
+    Vec3 {
+        x: a.x() - b.x(),
+        y: a.y() - b.y(),
+        z: a.z() - b.z()
+    }
+});
+
 impl_op!(* |a: Vec3, b: f64| -> Vec3 {
     Vec3 {
         x: a.x() * b,
@@ -77,6 +85,13 @@ impl_op!(* |a: Vec3, b: f64| -> Vec3 {
     }
 });
 
+impl_op!(* |a: &Vec3, b: f64| -> Vec3 {
+    Vec3 {
+        x: a.x() * b,
+        y: a.y() * b,
+        z: a.z() * b
+    }
+});
 
 #[test]
 fn origin_vector() {

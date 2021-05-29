@@ -1,14 +1,19 @@
 extern crate image;
-#[macro_use] extern crate impl_ops;
+#[macro_use]
+extern crate impl_ops;
 
 mod ray;
 mod vec3;
 
-use ray::Ray;
 use ray::intersects_sphere;
+use ray::Ray;
 use vec3::Vec3;
 
 fn main() {
+    // Colors
+    let white = Vec3::new(1.0, 1.0, 1.0);
+    let blueish = Vec3::new(0.5, 0.7, 1.0);
+
     let aspect_ratio = 16.0 / 9.0;
 
     // Image.
@@ -22,7 +27,7 @@ fn main() {
     let focal_length = 1.0;
 
     // Sphere in real world coordinates
-    let sphere_center = Vec3::new(0.0, 0.0, -1.0 * focal_length);
+    let sphere_center = Vec3::new(0.0, 0.0, -1.0);
     let radius = 0.5;
 
     // Eye: (0,0,0).
@@ -46,15 +51,18 @@ fn main() {
         let ray = Ray::new_from_origin(viewport_coordinate);
 
         let unit_direction = ray.direction().unit_vector();
-        let t = 0.5 * (unit_direction.y() + 1.0);
+        let background_param = 0.5 * (unit_direction.y() + 1.0);
 
-        let white = Vec3::new(1.0, 1.0, 1.0);
-        let blueish = Vec3::new(0.5, 0.7, 1.0);
-        let mut color = white * (1.0 - t) + blueish * t;
+        let sphere_hit_point = intersects_sphere(&sphere_center, radius, &ray);
 
-        if intersects_sphere(&sphere_center, radius, &ray) {
-            color = Vec3::new(1.0, 0.0, 0.0);
-        }
+        let color = match sphere_hit_point {
+            Some(hit_point_param) => {
+                    let hit_point = ray.at(hit_point_param);
+                    let normal = (hit_point - sphere_center).unit_vector();
+                    Vec3::new(normal.x() + 1.0, normal.y() + 1.0, normal.z() + 1.0) * 0.5
+            },
+            None => white * (1.0 - background_param) + blueish * background_param,
+        };
 
         let r = (color.x() * 256.0) as u8;
         let g = (color.y() * 256.0) as u8;
