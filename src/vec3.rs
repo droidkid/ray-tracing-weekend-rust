@@ -8,6 +8,11 @@ pub struct Vec3 {
     z: f64,
 }
 
+pub fn dot(v1: &Vec3, v2: &Vec3) -> f64 {
+    v1.x() * v2.x() + v1.y() * v2.y() + v1.z() * v2.z()
+}
+
+
 impl Vec3 {
     pub fn origin() -> Vec3 {
         Vec3 {
@@ -56,71 +61,22 @@ impl fmt::Display for Vec3 {
     }
 }
 
-impl ops::Add for Vec3 {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self {
-        Vec3 {
-            x: self.x() + other.x(),
-            y: self.y() + other.y(),
-            z: self.z() + other.z(),
-        }
+impl_op_ex!(+ |a: &Vec3, b: &Vec3 | -> Vec3 {
+    Vec3 {
+        x: a.x() + b.x(),
+        y: a.y() + b.y(),
+        z: a.z() + b.z()
     }
-}
+});
 
-impl ops::AddAssign for Vec3 {
-    fn add_assign(&mut self, other: Self) {
-        *self = Self {
-            x: self.x() + other.x(),
-            y: self.y() + other.y(),
-            z: self.z() + other.z(),
-        };
+impl_op!(* |a: Vec3, b: f64| -> Vec3 {
+    Vec3 {
+        x: a.x() * b,
+        y: a.y() * b,
+        z: a.z() * b
     }
-}
+});
 
-impl ops::Mul<f64> for Vec3 {
-    type Output = Self;
-
-    fn mul(self, other: f64) -> Self {
-        Vec3 {
-            x: self.x() * other,
-            y: self.y() * other,
-            z: self.z() * other,
-        }
-    }
-}
-
-impl ops::MulAssign<f64> for Vec3 {
-    fn mul_assign(&mut self, other: f64) {
-        *self = Self {
-            x: self.x() * other,
-            y: self.y() * other,
-            z: self.z() * other,
-        };
-    }
-}
-
-impl ops::Mul<i32> for Vec3 {
-    type Output = Self;
-
-    fn mul(self, other: i32) -> Self {
-        Vec3 {
-            x: self.x() * other as f64,
-            y: self.y() * other as f64,
-            z: self.z() * other as f64,
-        }
-    }
-}
-
-impl ops::MulAssign<i32> for Vec3 {
-    fn mul_assign(&mut self, other: i32) {
-        *self = Self {
-            x: self.x() * other as f64,
-            y: self.y() * other as f64,
-            z: self.z() * other as f64,
-        };
-    }
-}
 
 #[test]
 fn origin_vector() {
@@ -158,47 +114,11 @@ fn add_vector() {
 }
 
 #[test]
-fn add_assign_vector() {
-    let mut point1 = Vec3::new(1.0, -2.0, 7.3);
-    let point2 = Vec3::new(1.0, -2.0, 7.3);
-    point1 += point2;
-    assert_eq!(point1.x(), 2.0);
-    assert_eq!(point1.y(), -4.0);
-    assert_eq!(point1.z(), 14.6);
-}
-
-#[test]
-fn mul_vector_f64() {
+fn mul_vector() {
     let point1 = Vec3::new(1.0, -2.0, 7.0);
-    let point2 = point1 * 2.0;
-    assert_eq!(point2.x(), 2.0);
-    assert_eq!(point2.y(), -4.0);
-    assert_eq!(point2.z(), 14.0);
+    let point2 = point1 * 2.5;
+    assert_eq!(point2.x(), 2.5);
+    assert_eq!(point2.y(), -5.0);
+    assert_eq!(point2.z(), 17.5);
 }
 
-#[test]
-fn mul_assign_vector_f64() {
-    let mut point = Vec3::new(1.0, -2.0, 7.0);
-    point *= 0.5;
-    assert_eq!(point.x(), 0.5);
-    assert_eq!(point.y(), -1.0);
-    assert_eq!(point.z(), 3.5);
-}
-
-#[test]
-fn mul_vector_i32() {
-    let point1 = Vec3::new(1.0, -2.0, 7.0);
-    let point2 = point1 * 2;
-    assert_eq!(point2.x(), 2.0);
-    assert_eq!(point2.y(), -4.0);
-    assert_eq!(point2.z(), 14.0);
-}
-
-#[test]
-fn mul_assign_vector_i32() {
-    let mut point = Vec3::new(1.0, -2.0, 7.0);
-    point *= 4;
-    assert_eq!(point.x(), 4.0);
-    assert_eq!(point.y(), -8.0);
-    assert_eq!(point.z(), 28.0);
-}
