@@ -1,8 +1,18 @@
 use crate::vec3::Vec3;
+use crate::vec3::dot;
 
 pub struct Ray {
     origin: Vec3,
     direction: Vec3,
+}
+
+pub fn intersects_sphere(center: &Vec3, radius: f64, ray: &Ray) -> bool {
+    let oc: Vec3 = ray.origin() + center;
+    let a = dot(ray.direction(), ray.direction());
+    let b = 2.0 * dot(&oc, ray.direction());
+    let c = dot(&oc, &oc) - (radius * radius);
+    let discriminant = b * b - 4.0 * a * c;
+    return discriminant > 0.0;
 }
 
 impl Ray {
@@ -20,12 +30,16 @@ impl Ray {
         }
     }
 
+    pub fn origin(&self) -> &Vec3 {
+        return &self.origin;
+    }
+
     pub fn direction(&self) -> &Vec3 {
         return &self.direction;
     }
 
     fn at(&self, t: f64) -> Vec3 {
-        self.origin + self.direction * t
+        (self.origin() + self.direction()) * t
     }
 }
 

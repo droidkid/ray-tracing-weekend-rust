@@ -1,9 +1,11 @@
 extern crate image;
+#[macro_use] extern crate impl_ops;
 
 mod ray;
 mod vec3;
 
 use ray::Ray;
+use ray::intersects_sphere;
 use vec3::Vec3;
 
 fn main() {
@@ -19,7 +21,12 @@ fn main() {
     let viewport_width = viewport_height * aspect_ratio;
     let focal_length = 1.0;
 
-    // Eye is situated at origin.
+    // Sphere in real world coordinates
+    let sphere_center = Vec3::new(0.0, 0.0, -1.0 * focal_length);
+    let radius = 0.5;
+
+    // Eye: (0,0,0).
+    // Viewport (0, 0, -focal_length).
     let center_of_viewport = Vec3::new(0.0, 0.0, -1.0 * focal_length);
     let upper_left_corner =
         center_of_viewport + Vec3::new(-0.5 * viewport_width, 0.5 * viewport_height, 0.0);
@@ -43,7 +50,11 @@ fn main() {
 
         let white = Vec3::new(1.0, 1.0, 1.0);
         let blueish = Vec3::new(0.5, 0.7, 1.0);
-        let color = white * (1.0 - t) + blueish * t;
+        let mut color = white * (1.0 - t) + blueish * t;
+
+        if intersects_sphere(&sphere_center, radius, &ray) {
+            color = Vec3::new(1.0, 0.0, 0.0);
+        }
 
         let r = (color.x() * 256.0) as u8;
         let g = (color.y() * 256.0) as u8;
