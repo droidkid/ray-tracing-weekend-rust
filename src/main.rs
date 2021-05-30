@@ -2,10 +2,13 @@ extern crate image;
 #[macro_use]
 extern crate impl_ops;
 
+mod hittable;
 mod ray;
 mod vec3;
 
-use ray::intersects_sphere;
+use crate::hittable::HitRecord;
+use hittable::Hittable;
+use hittable::Sphere;
 use ray::Ray;
 use vec3::Vec3;
 
@@ -27,8 +30,16 @@ fn main() {
     let focal_length = 1.0;
 
     // Sphere in real world coordinates
-    let sphere_center = Vec3::new(0.0, 0.0, -1.0);
-    let radius = 0.5;
+    let sphere1 = Sphere {
+        center: Vec3::new(0.0, 0.0, -1.0),
+        radius: 0.5,
+    };
+    let sphere2 = Sphere {
+        center: Vec3::new(0.0, -100.5, -1.0),
+        radius: 100.0,
+    };
+
+    let world = vec![&sphere1, &sphere2];
 
     // Eye: (0,0,0).
     // Viewport (0, 0, -focal_length).
@@ -53,14 +64,38 @@ fn main() {
         let unit_direction = ray.direction().unit_vector();
         let background_param = 0.5 * (unit_direction.y() + 1.0);
 
-        let sphere_hit_point = intersects_sphere(&sphere_center, radius, &ray);
+        let mut hit_record: Option<HitRecord> = None;
 
-        let color = match sphere_hit_point {
-            Some(hit_point_param) => {
-                    let hit_point = ray.at(hit_point_param);
-                    let normal = (hit_point - sphere_center).unit_vector();
-                    Vec3::new(normal.x() + 1.0, normal.y() + 1.0, normal.z() + 1.0) * 0.5
-            },
+        for object in world.iter() {
+            let object_hit_record = object.hit(&ray, 0.0, f64::MAX);
+
+            if object_hit_record.is_none() {
+                continue;
+            }
+
+            let t = match &object_hit_record {
+                Some(object_hit_record) => Some(object_hit_record.t),
+                None => None, // Should not reach here.
+            }
+            .unwrap();
+
+            hit_record = match hit_record {
+                Some(hit_record) => {
+                    if hit_record.t > t {
+                        object_hit_record
+                    } else {
+                        Some(hit_record)
+                    }
+                }
+                None => object_hit_record,
+            };
+        }
+
+        let color = match hit_record {
+            Some(hit_point_record) => {
+                let normal = hit_point_record.normal;
+                Vec3::new(normal.x() + 1.0, normal.y() + 1.0, normal.z() + 1.0) * 0.5
+            }
             None => white * (1.0 - background_param) + blueish * background_param,
         };
 
