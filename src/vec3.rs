@@ -12,6 +12,13 @@ pub fn dot(v1: &Vec3, v2: &Vec3) -> f64 {
     v1.x() * v2.x() + v1.y() * v2.y() + v1.z() * v2.z()
 }
 
+pub fn cross(v1: &Vec3, v2: &Vec3) -> Vec3 {
+    Vec3 {
+        x: v1.y * v2.z - v1.z * v2.y,
+        y: v1.z * v2.x - v1.x * v2.z,
+        z: v1.x * v2.y - v1.y * v2.x,
+    }
+}
 
 impl Vec3 {
     pub fn origin() -> Vec3 {
@@ -46,12 +53,16 @@ impl Vec3 {
         self.len_squared().sqrt()
     }
 
-    pub fn unit_vector(&self) -> Vec3 {
+    pub fn normalize(&self) -> Vec3 {
         return Vec3::new(
             self.x() / self.len(),
             self.y() / self.len(),
             self.z() / self.len(),
         );
+    }
+
+    pub fn unit_vector(&self) -> Vec3 {
+        self.normalize()
     }
 }
 
@@ -69,27 +80,43 @@ impl_op_ex!(+ |a: &Vec3, b: &Vec3 | -> Vec3 {
     }
 });
 
-impl_op_ex!(- |a: &Vec3, b: &Vec3 | -> Vec3 {
+impl_op_ex!(-|a: &Vec3, b: &Vec3| -> Vec3 {
     Vec3 {
         x: a.x() - b.x(),
         y: a.y() - b.y(),
-        z: a.z() - b.z()
+        z: a.z() - b.z(),
     }
 });
 
-impl_op!(* |a: Vec3, b: f64| -> Vec3 {
+impl_op!(*|a: Vec3, b: f64| -> Vec3 {
     Vec3 {
         x: a.x() * b,
         y: a.y() * b,
-        z: a.z() * b
+        z: a.z() * b,
     }
 });
 
-impl_op!(* |a: &Vec3, b: f64| -> Vec3 {
+impl_op!(*|a: &Vec3, b: f64| -> Vec3 {
     Vec3 {
         x: a.x() * b,
         y: a.y() * b,
-        z: a.z() * b
+        z: a.z() * b,
+    }
+});
+
+impl_op!(*|b:f64, a: &Vec3| -> Vec3 {
+    Vec3 {
+        x: a.x() * b,
+        y: a.y() * b,
+        z: a.z() * b,
+    }
+});
+
+impl_op!(*|b:f64, a: Vec3| -> Vec3 {
+    Vec3 {
+        x: a.x() * b,
+        y: a.y() * b,
+        z: a.z() * b,
     }
 });
 
@@ -136,4 +163,3 @@ fn mul_vector() {
     assert_eq!(point2.y(), -5.0);
     assert_eq!(point2.z(), 17.5);
 }
-
