@@ -104,7 +104,7 @@ impl_op!(*|a: &Vec3, b: f64| -> Vec3 {
     }
 });
 
-impl_op!(*|b:f64, a: &Vec3| -> Vec3 {
+impl_op!(*|b: f64, a: &Vec3| -> Vec3 {
     Vec3 {
         x: a.x() * b,
         y: a.y() * b,
@@ -112,7 +112,7 @@ impl_op!(*|b:f64, a: &Vec3| -> Vec3 {
     }
 });
 
-impl_op!(*|b:f64, a: Vec3| -> Vec3 {
+impl_op!(*|b: f64, a: Vec3| -> Vec3 {
     Vec3 {
         x: a.x() * b,
         y: a.y() * b,

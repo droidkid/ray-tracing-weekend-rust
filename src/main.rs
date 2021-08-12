@@ -48,56 +48,68 @@ fn main() {
     };
 
     let world = vec![&sphere1, &sphere2];
-    let pixel_rays: Vec<PixelRays> = camera.get_rays();
+
+    let samples_per_pixel: u32 = 50;
+    let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
 
     for pixel_ray in pixel_rays {
-        // TODO(chesetti): Make this average out of all rays.
-        // TODO(chesetti): Throw error if no rays exist
-        let ray = &pixel_ray.rays[0];
-        let mut hit_record: Option<HitRecord> = None;
+        let mut r: f64 = 0.0;
+        let mut g: f64 = 0.0;
+        let mut b: f64 = 0.0;
 
-        let unit_direction = ray.direction().normalize();
-        let background_param = 0.5 * (unit_direction.y() + 1.0);
+        for ray in pixel_ray.rays {
+            let mut hit_record: Option<HitRecord> = None;
 
-        for object in world.iter() {
-            let object_hit_record = object.hit(&ray, 0.0, f64::MAX);
+            let unit_direction = ray.direction().normalize();
+            let background_param = 0.5 * (unit_direction.y() + 1.0);
 
-            if object_hit_record.is_none() {
-                continue;
-            }
+            for object in world.iter() {
+                let object_hit_record = object.hit(&ray, 0.0, f64::MAX);
 
-            let t = match &object_hit_record {
-                Some(object_hit_record) => Some(object_hit_record.t),
-                None => None, // Should not reach here.
-            }
-            .unwrap();
-
-            hit_record = match hit_record {
-                Some(hit_record) => {
-                    if hit_record.t > t {
-                        object_hit_record
-                    } else {
-                        Some(hit_record)
-                    }
+                if object_hit_record.is_none() {
+                    continue;
                 }
-                None => object_hit_record,
+
+                let t = match &object_hit_record {
+                    Some(object_hit_record) => Some(object_hit_record.t),
+                    None => None, // Should not reach here.
+                }
+                .unwrap();
+
+                hit_record = match hit_record {
+                    Some(hit_record) => {
+                        if hit_record.t > t {
+                            object_hit_record
+                        } else {
+                            Some(hit_record)
+                        }
+                    }
+                    None => object_hit_record,
+                };
+            }
+
+            let color = match hit_record {
+                Some(hit_point_record) => {
+                    let normal = hit_point_record.normal;
+                    Vec3::new(normal.x() + 1.0, normal.y() + 1.0, normal.z() + 1.0) * 0.5
+                }
+                None => white * (1.0 - background_param) + blueish * background_param,
             };
+
+            r = r + color.x();
+            g = g + color.y();
+            b = b + color.z();
         }
 
-        let color = match hit_record {
-            Some(hit_point_record) => {
-                let normal = hit_point_record.normal;
-                Vec3::new(normal.x() + 1.0, normal.y() + 1.0, normal.z() + 1.0) * 0.5
-            }
-            None => white * (1.0 - background_param) + blueish * background_param,
-        };
+        r = r * 256.0 / (samples_per_pixel as f64);
+        g = g * 256.0 / (samples_per_pixel as f64);
+        b = b * 256.0 / (samples_per_pixel as f64);
 
-        let r = (color.x() * 256.0) as u8;
-        let g = (color.y() * 256.0) as u8;
-        let b = (color.z() * 256.0) as u8;
-
-        img_buf.put_pixel(pixel_ray.x, pixel_ray.y, image::Rgb([r, g, b]));
+        img_buf.put_pixel(
+            pixel_ray.x,
+            pixel_ray.y,
+            image::Rgb([r as u8, g as u8, b as u8]),
+        );
     }
-
     img_buf.save("gradient.png").unwrap();
 }

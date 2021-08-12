@@ -1,5 +1,6 @@
 use crate::ray::Ray;
 use crate::vec3::{cross, Vec3};
+use rand::Rng;
 
 pub struct Camera {
     position: Vec3,
@@ -50,29 +51,32 @@ impl Camera {
     }
 
     // Function that returns a list of rays for each pixel in the raster
-    pub fn get_rays(&self) -> Vec<PixelRays> {
+    pub fn get_rays(&self, samples_per_pixel: u32) -> Vec<PixelRays> {
         let viewport_center = self.position + self.forward * (-1.0 * self.focal_length);
         let viewport_upper_left = viewport_center
             + ((-0.5 * self.viewport_height) * self.up)
             + ((-0.5 * self.viewport_width) * self.right);
 
         let mut pixel_rays: Vec<PixelRays> = vec![];
+        let mut rng = rand::thread_rng();
 
         for x in 0..self.raster_width {
             for y in 0..self.raster_height {
-                let delta = Vec3::new(
-                    self.viewport_width * (x as f64 / self.raster_width as f64),
-                    self.viewport_height * ((self.raster_height - y) as f64 / self.raster_height as f64),
-                    0.0,
-                );
+                let mut rays: Vec<Ray> = vec![];
 
-                let destination = viewport_upper_left + delta;
-
-                pixel_rays.push(PixelRays {
-                    x,
-                    y,
-                    rays: vec![Ray::new(self.position, destination)],
-                });
+                for sample in 0..samples_per_pixel {
+                    let nx: f64 = x as f64 + rng.gen::<f64>();
+                    let ny: f64 = y as f64 + rng.gen::<f64>();
+                    let destination = viewport_upper_left
+                        + Vec3::new(
+                            self.viewport_width * (nx / self.raster_width as f64),
+                            self.viewport_height
+                                * ((self.raster_height as f64 - ny) / self.raster_height as f64),
+                            0.0,
+                        );
+                    rays.push(Ray::new(self.position, destination));
+                }
+                pixel_rays.push(PixelRays { x, y, rays });
             }
         }
         pixel_rays
