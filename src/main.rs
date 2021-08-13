@@ -35,7 +35,7 @@ fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Vec3 {
     let blueish = Vec3::new(0.5, 0.7, 1.0);
 
     for sphere in spheres.iter() {
-        let sphere_hit_record = sphere.hit(&ray, 0.0, f64::MAX);
+        let sphere_hit_record = sphere.hit(&ray, 0.0001, f64::MAX);
         if sphere_hit_record.is_none() {
             continue;
         }
