@@ -97,9 +97,18 @@ fn main() {
             b = b + color.z();
         }
 
-        r = r * 256.0 / (samples_per_pixel as f64);
-        g = g * 256.0 / (samples_per_pixel as f64);
-        b = b * 256.0 / (samples_per_pixel as f64);
+
+        r = r  / (samples_per_pixel as f64);
+        g = g  / (samples_per_pixel as f64);
+        b = b  / (samples_per_pixel as f64);
+
+        r = r.sqrt();
+        g = g.sqrt();
+        b = b.sqrt();
+
+        r = r * 256.0;
+        g = g * 256.0;
+        b = b * 256.0;
 
         img_buf.put_pixel(
             pixel_ray.x,
