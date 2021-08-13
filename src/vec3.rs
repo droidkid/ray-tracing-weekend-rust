@@ -1,5 +1,6 @@
 use std::fmt;
 use std::ops;
+use rand::Rng;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Vec3 {
@@ -26,6 +27,15 @@ impl Vec3 {
             x: 0.0,
             y: 0.0,
             z: 0.0,
+        }
+    }
+
+    pub fn random(min: f64, max: f64)  -> Vec3 {
+        let mut rng = rand::thread_rng();
+        Vec3 {
+            x: rng.gen_range(min..max),
+            y: rng.gen_range(min..max),
+            z: rng.gen_range(min..max)
         }
     }
 

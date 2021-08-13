@@ -13,12 +13,45 @@ use camera::Camera;
 use hittable::Hittable;
 use hittable::Sphere;
 use vec3::Vec3;
+use crate::ray::Ray;
 
-fn main() {
-    // Colors
+fn random_in_unit_sphere()  -> Vec3 {
+    loop {
+        let p = Vec3::random(-1.0, 1.0);
+        if p.len_squared() < 1.0 {
+            return p;
+        }
+    }
+}
+
+fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Vec3 {
+    if depth <= 0 {
+        // TODO(chesetti): Color class needed here.
+        Vec3::origin();
+    }
+
+    // TODO(chesetti): Add a color class?
     let white = Vec3::new(1.0, 1.0, 1.0);
     let blueish = Vec3::new(0.5, 0.7, 1.0);
 
+    for sphere in spheres.iter() {
+        let sphere_hit_record = sphere.hit(&ray, 0.0, f64::MAX);
+        if sphere_hit_record.is_none() {
+            continue;
+        }
+        let hit_record = sphere_hit_record.unwrap();
+
+        let target = hit_record.hit_point + hit_record.normal + random_in_unit_sphere();
+        let next_ray = Ray::from_to(hit_record.hit_point, target);
+        return 0.5 * ray_color(spheres, &next_ray, depth-1);
+    };
+
+    let unit_direction = ray.direction().normalize();
+    let background_param = 0.5 * (unit_direction.y() + 1.0);
+    white * (1.0 - background_param) + blueish * background_param
+}
+
+fn main() {
     // Camera & Viewport
     let aspect_ratio = 16.0 / 9.0;
     let img_width = 400;
@@ -49,7 +82,7 @@ fn main() {
 
     let world = vec![&sphere1, &sphere2];
 
-    let samples_per_pixel: u32 = 50;
+    let samples_per_pixel: u32 = 100;
     let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
 
     for pixel_ray in pixel_rays {
@@ -58,44 +91,7 @@ fn main() {
         let mut b: f64 = 0.0;
 
         for ray in pixel_ray.rays {
-            let mut hit_record: Option<HitRecord> = None;
-
-            let unit_direction = ray.direction().normalize();
-            let background_param = 0.5 * (unit_direction.y() + 1.0);
-
-            for object in world.iter() {
-                let object_hit_record = object.hit(&ray, 0.0, f64::MAX);
-
-                if object_hit_record.is_none() {
-                    continue;
-                }
-
-                let t = match &object_hit_record {
-                    Some(object_hit_record) => Some(object_hit_record.t),
-                    None => None, // Should not reach here.
-                }
-                .unwrap();
-
-                hit_record = match hit_record {
-                    Some(hit_record) => {
-                        if hit_record.t > t {
-                            object_hit_record
-                        } else {
-                            Some(hit_record)
-                        }
-                    }
-                    None => object_hit_record,
-                };
-            }
-
-            let color = match hit_record {
-                Some(hit_point_record) => {
-                    let normal = hit_point_record.normal;
-                    Vec3::new(normal.x() + 1.0, normal.y() + 1.0, normal.z() + 1.0) * 0.5
-                }
-                None => white * (1.0 - background_param) + blueish * background_param,
-            };
-
+            let color = ray_color(&world, &ray, 100);
             r = r + color.x();
             g = g + color.y();
             b = b + color.z();
