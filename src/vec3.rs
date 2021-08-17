@@ -74,6 +74,10 @@ impl Vec3 {
     pub fn unit_vector(&self) -> Vec3 {
         self.normalize()
     }
+
+    pub fn reflect(&self, normal: &Vec3) -> Vec3 {
+        self - 2.0 * dot(self, normal) * normal
+    }
 }
 
 impl fmt::Display for Vec3 {

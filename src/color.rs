@@ -22,14 +22,24 @@ impl Color {
 
     pub fn lerp(start_color: Color, end_color: Color, param: f64) -> Color {
         Color {
-            rgb: start_color.rgb * (1.0 - param) + end_color.rgb * param
+            rgb: start_color.rgb * (1.0 - param) + end_color.rgb * param,
         }
     }
 
-    pub fn intensity(&self, factor:f64) -> Color {
+    pub fn attenuate_factor(&self, factor: f64) -> Color {
         // TODO(chesetti): What happens if factor > 1?
         Color {
-            rgb: factor * self.rgb
+            rgb: factor * self.rgb,
+        }
+    }
+    pub fn attenuate(&self, factor: Vec3) -> Color {
+        // TODO(chesetti): What happens if Vec3 > 1?
+        Color {
+            rgb: Vec3::new(
+                self.rgb.x() * factor.x(),
+                self.rgb.y() * factor.y(),
+                self.rgb.z() * factor.z(),
+            ),
         }
     }
 

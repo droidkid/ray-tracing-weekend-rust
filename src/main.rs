@@ -3,27 +3,21 @@ extern crate image;
 extern crate impl_ops;
 
 mod camera;
-mod hittable;
-mod ray;
-mod vec3;
 mod color;
+mod hittable;
+mod matrerial;
+mod ray;
+mod sphere;
+mod vec3;
 
-use crate::camera::PixelRays;
 use crate::camera::Camera;
-use crate::hittable::Hittable;
-use crate::hittable::Sphere;
-use crate::vec3::Vec3;
-use crate::ray::Ray;
+use crate::camera::PixelRays;
 use crate::color::Color;
-
-fn random_in_unit_sphere()  -> Vec3 {
-    loop {
-        let p = Vec3::random(-1.0, 1.0);
-        if p.len_squared() < 1.0 {
-            return p;
-        }
-    }
-}
+use crate::hittable::Hittable;
+use crate::matrerial::{Lambertian, Metal};
+use crate::ray::Ray;
+use crate::sphere::Sphere;
+use crate::vec3::Vec3;
 
 fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Color {
     if depth <= 0 {
@@ -36,16 +30,20 @@ fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Color {
             continue;
         }
         let hit_record = sphere_hit_record.unwrap();
+        let scatter_result = sphere.material.scatter(ray, &hit_record);
+        match scatter_result {
+            Some(scatter_result) => {
+                return ray_color(spheres, &scatter_result.ray, depth - 1)
+                    .attenuate(scatter_result.attenuation);
+            }
+            None => continue,
+        }
+    }
 
-        let target = hit_record.hit_point + hit_record.normal + random_in_unit_sphere();
-        let next_ray = Ray::from_to(hit_record.hit_point, target);
-        return ray_color(spheres, &next_ray, depth-1).intensity(0.5);
-    };
-
-     let unit_direction = ray.direction().normalize();
-     let background_param = 0.5 * (unit_direction.y() + 1.0);
-     let blueish = Color::new(0.5, 0.7, 1.0);
-     Color::lerp(Color::white(), blueish, background_param)
+    let unit_direction = ray.direction().normalize();
+    let background_param = 0.5 * (unit_direction.y() + 1.0);
+    let blueish = Color::new(0.5, 0.7, 1.0);
+    Color::lerp(Color::white(), blueish, background_param)
 }
 
 fn main() {
@@ -71,13 +69,20 @@ fn main() {
     let sphere1 = Sphere {
         center: Vec3::new(0.0, 0.0, -1.0),
         radius: 0.5,
+        material: Box::new(Lambertian::new(Vec3::new(1.0, 0.5, 0.5))),
     };
     let sphere2 = Sphere {
         center: Vec3::new(0.0, -100.5, -1.0),
         radius: 100.0,
+        material: Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
+    };
+    let sphere3 = Sphere {
+        center: Vec3::new(-1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Box::new(Metal::new(Vec3::new(0.5, 0.5, 0.5))),
     };
 
-    let world = vec![&sphere1, &sphere2];
+    let world = vec![&sphere1, &sphere3, &sphere2];
 
     let samples_per_pixel: u32 = 100;
     let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
@@ -89,11 +94,7 @@ fn main() {
         }
 
         let color = Color::average_color(sampled_colors.iter()).gamma_corrected();
-        img_buf.put_pixel(
-            pixel_ray.x,
-            pixel_ray.y,
-            color.image_pixel()
-        );
+        img_buf.put_pixel(pixel_ray.x, pixel_ray.y, color.image_pixel());
     }
     img_buf.save("gradient.png").unwrap();
 }

@@ -18,7 +18,10 @@ impl Ray {
     }
 
     pub fn from_to(origin: Vec3, destination: Vec3) -> Ray {
-        Ray {origin, direction: destination-origin}
+        Ray {
+            origin,
+            direction: destination - origin,
+        }
     }
 
     pub fn origin(&self) -> &Vec3 {
