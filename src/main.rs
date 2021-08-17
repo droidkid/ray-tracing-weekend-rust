@@ -13,7 +13,7 @@ mod vec3;
 use crate::camera::Camera;
 use crate::camera::PixelRays;
 use crate::color::Color;
-use crate::hittable::Hittable;
+use crate::hittable::{Hittable, HitRecord};
 use crate::matrerial::{Lambertian, Metal};
 use crate::ray::Ray;
 use crate::sphere::Sphere;
@@ -23,27 +23,38 @@ fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Color {
     if depth <= 0 {
         Color::black();
     }
+    let mut nearest_hit_record: Option<HitRecord> = None;
+    let mut nearest_t = 0.0;
 
     for sphere in spheres.iter() {
-        let sphere_hit_record = sphere.hit(&ray, 0.0001, f64::MAX);
-        if sphere_hit_record.is_none() {
+        let maybe_hit_record = sphere.hit(&ray, 0.0001, f64::MAX);
+        if maybe_hit_record.is_none() {
             continue;
         }
-        let hit_record = sphere_hit_record.unwrap();
-        let scatter_result = sphere.material.scatter(ray, &hit_record);
+
+        let hit_record = maybe_hit_record.unwrap();
+        if nearest_hit_record.is_none() || hit_record.t < nearest_t {
+            nearest_t = hit_record.t;
+            nearest_hit_record = Some(hit_record);
+        }
+    }
+
+    if nearest_hit_record.is_some() {
+        let nearest_hit_record = nearest_hit_record.unwrap();
+        let scatter_result = nearest_hit_record.material.scatter(ray, &nearest_hit_record);
         match scatter_result {
             Some(scatter_result) => {
                 return ray_color(spheres, &scatter_result.ray, depth - 1)
                     .attenuate(scatter_result.attenuation);
             }
-            None => continue,
+            None => Color::black(),
         }
+    } else {
+        let unit_direction = ray.direction().normalize();
+        let background_param = 0.5 * (unit_direction.y() + 1.0);
+        let blueish = Color::new(0.5, 0.7, 1.0);
+        Color::lerp(Color::white(), blueish, background_param)
     }
-
-    let unit_direction = ray.direction().normalize();
-    let background_param = 0.5 * (unit_direction.y() + 1.0);
-    let blueish = Color::new(0.5, 0.7, 1.0);
-    Color::lerp(Color::white(), blueish, background_param)
 }
 
 fn main() {
@@ -82,7 +93,7 @@ fn main() {
         material: Box::new(Metal::new(Vec3::new(0.5, 0.5, 0.5))),
     };
 
-    let world = vec![&sphere1, &sphere3, &sphere2];
+    let world = vec![&sphere3, &sphere2, &sphere1];
 
     let samples_per_pixel: u32 = 100;
     let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
