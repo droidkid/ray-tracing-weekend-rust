@@ -6,14 +6,15 @@ mod camera;
 mod hittable;
 mod ray;
 mod vec3;
+mod color;
 
 use crate::camera::PixelRays;
-use crate::hittable::HitRecord;
-use camera::Camera;
-use hittable::Hittable;
-use hittable::Sphere;
-use vec3::Vec3;
+use crate::camera::Camera;
+use crate::hittable::Hittable;
+use crate::hittable::Sphere;
+use crate::vec3::Vec3;
 use crate::ray::Ray;
+use crate::color::Color;
 
 fn random_in_unit_sphere()  -> Vec3 {
     loop {
@@ -24,15 +25,10 @@ fn random_in_unit_sphere()  -> Vec3 {
     }
 }
 
-fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Vec3 {
+fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Color {
     if depth <= 0 {
-        // TODO(chesetti): Color class needed here.
-        Vec3::origin();
+        Color::black();
     }
-
-    // TODO(chesetti): Add a color class?
-    let white = Vec3::new(1.0, 1.0, 1.0);
-    let blueish = Vec3::new(0.5, 0.7, 1.0);
 
     for sphere in spheres.iter() {
         let sphere_hit_record = sphere.hit(&ray, 0.0001, f64::MAX);
@@ -43,12 +39,13 @@ fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Vec3 {
 
         let target = hit_record.hit_point + hit_record.normal + random_in_unit_sphere();
         let next_ray = Ray::from_to(hit_record.hit_point, target);
-        return 0.5 * ray_color(spheres, &next_ray, depth-1);
+        return ray_color(spheres, &next_ray, depth-1).intensity(0.5);
     };
 
-    let unit_direction = ray.direction().normalize();
-    let background_param = 0.5 * (unit_direction.y() + 1.0);
-    white * (1.0 - background_param) + blueish * background_param
+     let unit_direction = ray.direction().normalize();
+     let background_param = 0.5 * (unit_direction.y() + 1.0);
+     let blueish = Color::new(0.5, 0.7, 1.0);
+     Color::lerp(Color::white(), blueish, background_param)
 }
 
 fn main() {
@@ -86,34 +83,16 @@ fn main() {
     let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
 
     for pixel_ray in pixel_rays {
-        let mut r: f64 = 0.0;
-        let mut g: f64 = 0.0;
-        let mut b: f64 = 0.0;
-
+        let mut sampled_colors: Vec<Color> = vec![];
         for ray in pixel_ray.rays {
-            let color = ray_color(&world, &ray, 100);
-            r = r + color.x();
-            g = g + color.y();
-            b = b + color.z();
+            sampled_colors.push(ray_color(&world, &ray, 100));
         }
 
-
-        r = r  / (samples_per_pixel as f64);
-        g = g  / (samples_per_pixel as f64);
-        b = b  / (samples_per_pixel as f64);
-
-        r = r.sqrt();
-        g = g.sqrt();
-        b = b.sqrt();
-
-        r = r * 256.0;
-        g = g * 256.0;
-        b = b * 256.0;
-
+        let color = Color::average_color(sampled_colors.iter()).gamma_corrected();
         img_buf.put_pixel(
             pixel_ray.x,
             pixel_ray.y,
-            image::Rgb([r as u8, g as u8, b as u8]),
+            color.image_pixel()
         );
     }
     img_buf.save("gradient.png").unwrap();

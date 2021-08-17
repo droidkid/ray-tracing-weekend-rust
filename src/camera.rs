@@ -64,7 +64,7 @@ impl Camera {
             for y in 0..self.raster_height {
                 let mut rays: Vec<Ray> = vec![];
 
-                for sample in 0..samples_per_pixel {
+                for _ in 0..samples_per_pixel {
                     let nx: f64 = x as f64 + rng.gen::<f64>();
                     let ny: f64 = y as f64 + rng.gen::<f64>();
                     let destination = viewport_upper_left
