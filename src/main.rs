@@ -18,6 +18,7 @@ use crate::matrerial::{Lambertian, Metal};
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3::Vec3;
+use std::f64::consts::PI;
 
 fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Color {
     if depth <= 0 {
@@ -66,10 +67,11 @@ fn main() {
     let viewport_width = viewport_height * aspect_ratio;
 
     let camera = Camera::camera(
-        Vec3::origin(),
+        Vec3::new(-2.0, 2.0, 1.0),
         Vec3::new(0.0, 0.0, -1.0),
-        viewport_width,
-        viewport_height,
+        Vec3::new(0.0, 1.0, 0.0),
+        90.0,
+        16.0 / 9.0,
         img_width,
         img_height,
     );
@@ -90,10 +92,15 @@ fn main() {
     let sphere3 = Sphere {
         center: Vec3::new(-1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Box::new(Metal::new(Vec3::new(0.5, 0.5, 0.5))),
+        material: Box::new(Lambertian::new(Vec3::new(0.2, 0.3, 0.7))),
+    };
+    let sphere4 = Sphere {
+        center: Vec3::new(1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Box::new(Lambertian::new(Vec3::new(0.2, 0.7, 0.3))),
     };
 
-    let world = vec![&sphere3, &sphere2, &sphere1];
+    let world = vec![&sphere2, &sphere1, &sphere3, &sphere4];
 
     let samples_per_pixel: u32 = 100;
     let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
