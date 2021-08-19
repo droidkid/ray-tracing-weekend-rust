@@ -1,5 +1,5 @@
 use crate::hittable::{HitRecord, Hittable};
-use crate::matrerial::Material;
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{dot, Vec3};
 

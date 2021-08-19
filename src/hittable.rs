@@ -1,6 +1,6 @@
 use crate::ray::Ray;
 use crate::vec3::Vec3;
-use crate::matrerial::Material;
+use crate::material::Material;
 
 pub struct HitRecord<'a> {
     pub hit_point: Vec3,
