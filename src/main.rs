@@ -98,7 +98,7 @@ fn main() {
     let sphere4 = Sphere {
         center: Vec3::new(1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Box::new(Metal::new(Vec3::new(0.2, 0.7, 0.3))),
+        material: Box::new(Metal::new(Vec3::new(0.2, 0.7, 0.3), 0.3)),
     };
 
     let world = vec![&sphere2, &sphere3_in, &sphere3_out, &sphere1, &sphere4];
