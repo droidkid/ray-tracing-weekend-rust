@@ -21,7 +21,7 @@ use crate::vec3::Vec3;
 
 fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Color {
     if depth <= 0 {
-        Color::black();
+        return Color::black();
     }
     let mut nearest_hit_record: Option<HitRecord> = None;
     let mut nearest_t = 0.0;
@@ -103,14 +103,14 @@ fn main() {
 
     let world = vec![&sphere2, &sphere3_in, &sphere3_out, &sphere1, &sphere4];
 
-    let samples_per_pixel: u32 = 10;
+    let samples_per_pixel: u32 = 100;
     let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
 
     let mut img_buf = image::ImageBuffer::new(img_width, img_height);
     for pixel_ray in pixel_rays {
         let mut sampled_colors: Vec<Color> = vec![];
         for ray in pixel_ray.rays {
-             sampled_colors.push(ray_color(&world, &ray, 10));
+             sampled_colors.push(ray_color(&world, &ray, 100));
         }
 
         let color = Color::average_color(sampled_colors.iter()).gamma_corrected();
