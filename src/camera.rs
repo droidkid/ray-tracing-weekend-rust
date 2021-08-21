@@ -41,10 +41,6 @@ impl Camera {
         let right: Vec3 = cross(&vup, &forward).normalize();
         let up: Vec3 = cross(&forward, &right).normalize();
 
-        println!("{} {} {}", forward.x(), forward.y(), forward.z());
-        println!("{} {} {}", right.x(), right.y(), right.z());
-        println!("{} {} {}", up.x(), up.y(), up.z());
-
         let theta = vertical_fov.to_radians();
         let h = (theta * 0.5).tan();
         let viewport_height = 2.0 * h;
