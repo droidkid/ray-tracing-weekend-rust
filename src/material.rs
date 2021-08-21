@@ -49,7 +49,7 @@ impl Material for Lambertian {
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterResult> {
         let unit_vector = ray_in.direction().unit_vector();
-        let scatter_direction = unit_vector - 2.0 * dot(&unit_vector, &hit_record.normal) * hit_record.normal;
+        let scatter_direction = unit_vector.reflect(&hit_record.normal);
         let scattered_ray = Ray::new(hit_record.hit_point, scatter_direction);
         if dot(scattered_ray.direction(), &hit_record.normal) > 0.0 {
             Some(ScatterResult {

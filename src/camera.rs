@@ -50,8 +50,6 @@ impl Camera {
         let viewport_height = 2.0 * h;
         let viewport_width= aspect_ratio * viewport_height;
 
-        println!("{} {}", viewport_height, viewport_width);
-
         Camera {
             position: from,
             forward,
