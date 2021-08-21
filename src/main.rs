@@ -14,11 +14,10 @@ use crate::camera::Camera;
 use crate::camera::PixelRays;
 use crate::color::Color;
 use crate::hittable::{Hittable, HitRecord};
-use crate::material::{Lambertian, Metal};
+use crate::material::{Lambertian, Metal, Dielectric};
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3::Vec3;
-use std::f64::consts::PI;
 
 fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Color {
     if depth <= 0 {
@@ -63,11 +62,9 @@ fn main() {
     let aspect_ratio = 16.0 / 9.0;
     let img_width = 400;
     let img_height = (img_width as f64 / aspect_ratio) as u32;
-    let viewport_height = 2.0;
-    let viewport_width = viewport_height * aspect_ratio;
 
     let camera = Camera::camera(
-        Vec3::new(-2.0, 2.0, 1.0),
+        Vec3::new(0.0, 0.0, 1.0),
         Vec3::new(0.0, 0.0, -1.0),
         Vec3::new(0.0, 1.0, 0.0),
         90.0,
@@ -76,23 +73,27 @@ fn main() {
         img_height,
     );
 
-    let mut img_buf = image::ImageBuffer::new(img_width, img_height);
 
     // Sphere in real world coordinates
     let sphere1 = Sphere {
         center: Vec3::new(0.0, 0.0, -1.0),
         radius: 0.5,
-        material: Box::new(Lambertian::new(Vec3::new(1.0, 0.5, 0.5))),
+         material: Box::new(Lambertian::new(Vec3::new(1.0, 0.5, 0.5))),
     };
     let sphere2 = Sphere {
         center: Vec3::new(0.0, -100.5, -1.0),
         radius: 100.0,
         material: Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
     };
-    let sphere3 = Sphere {
+    let sphere3_out = Sphere {
         center: Vec3::new(-1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Box::new(Metal::new(Vec3::new(0.8, 0.8, 0.8))),
+        material: Box::new(Dielectric::new(1.5)),
+    };
+    let sphere3_in = Sphere {
+        center: Vec3::new(-1.0, 0.0, -1.0),
+        radius: -0.4,
+        material: Box::new(Dielectric::new(1.5)),
     };
     let sphere4 = Sphere {
         center: Vec3::new(1.0, 0.0, -1.0),
@@ -100,15 +101,16 @@ fn main() {
         material: Box::new(Metal::new(Vec3::new(0.2, 0.7, 0.3))),
     };
 
-    let world = vec![&sphere2, &sphere3, &sphere1, &sphere4];
+    let world = vec![&sphere2, &sphere3_in, &sphere3_out, &sphere1, &sphere4];
 
-    let samples_per_pixel: u32 = 100;
+    let samples_per_pixel: u32 = 10;
     let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
 
+    let mut img_buf = image::ImageBuffer::new(img_width, img_height);
     for pixel_ray in pixel_rays {
         let mut sampled_colors: Vec<Color> = vec![];
         for ray in pixel_ray.rays {
-            sampled_colors.push(ray_color(&world, &ray, 100));
+             sampled_colors.push(ray_color(&world, &ray, 10));
         }
 
         let color = Color::average_color(sampled_colors.iter()).gamma_corrected();

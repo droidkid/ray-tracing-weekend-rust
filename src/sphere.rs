@@ -41,14 +41,14 @@ impl Hittable for Sphere {
                 Some(build_hit_record(
                     ray,
                     t1,
-                    (ray.at(t1) - self.center).unit_vector(),
+                    (ray.at(t1) - self.center) * (1.0 / self.radius),
                     &self.material
                 ))
             } else if t2 > t_min && t2 < t_max {
                 Some(build_hit_record(
                     ray,
                     t2,
-                    (ray.at(t2) - self.center).unit_vector(),
+                    (ray.at(t2) - self.center) * (1.0 / self.radius),
                     &self.material
                 ))
             } else {
