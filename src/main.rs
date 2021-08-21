@@ -64,15 +64,16 @@ fn main() {
     let img_height = (img_width as f64 / aspect_ratio) as u32;
 
     let camera = Camera::camera(
-        Vec3::new(0.0, 0.0, 1.0),
+        Vec3::new(3.0, 3.0, 2.0),
         Vec3::new(0.0, 0.0, -1.0),
         Vec3::new(0.0, 1.0, 0.0),
-        90.0,
+        2.0,
+        (27.0_f64).sqrt(),
+        20.0,
         16.0 / 9.0,
         img_width,
         img_height,
     );
-
 
     // Sphere in real world coordinates
     let sphere1 = Sphere {

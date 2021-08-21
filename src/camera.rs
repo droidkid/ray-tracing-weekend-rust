@@ -15,6 +15,10 @@ pub struct Camera {
     viewport_width: f64,
     viewport_height: f64,
 
+    // Lens Stuff
+    aperture: f64,
+    focus_dist: f64,
+
     // Viewport to Screen stuff
     raster_width: u32,
     raster_height: u32,
@@ -31,6 +35,8 @@ impl Camera {
         from: Vec3,
         to: Vec3,
         vup: Vec3,
+        aperture: f64,
+        focus_dist: f64,
         vertical_fov: f64,
         aspect_ratio: f64,
         raster_width: u32,
@@ -53,6 +59,8 @@ impl Camera {
             up,
             vertical_fov,
             aspect_ratio,
+            aperture,
+            focus_dist,
             focal_length: 1.0,
             viewport_width,
             viewport_height,
@@ -63,10 +71,10 @@ impl Camera {
 
     // Function that returns a list of rays for each pixel in the raster
     pub fn get_rays(&self, samples_per_pixel: u32) -> Vec<PixelRays> {
-        let viewport_center = self.position - self.forward;
+        let viewport_center = self.position - self.focus_dist * self.forward;
         let viewport_lower_left = viewport_center
-            + ((-0.5 * self.viewport_height) * self.up)
-            + ((-0.5 * self.viewport_width) * self.right);
+            + ((-0.5 * self.viewport_height * self.focus_dist) * self.up)
+            + ((-0.5 * self.viewport_width * self.focus_dist) * self.right);
 
         let mut pixel_rays: Vec<PixelRays> = vec![];
         let mut rng = rand::thread_rng();
@@ -79,11 +87,13 @@ impl Camera {
                     let px: f64 = x as f64 + rng.gen::<f64>();
                     let py: f64 = y as f64 + rng.gen::<f64>();
 
-                    let sx = self.viewport_width * (px / self.raster_width as f64);
-                    let sy = self.viewport_height * (self.raster_height as f64 - py) / self.raster_height as f64;
-
+                    let sx = self.focus_dist * self.viewport_width * (px / self.raster_width as f64);
+                    let sy = self.focus_dist * self.viewport_height * (self.raster_height as f64 - py) / self.raster_height as f64;
                     let destination = viewport_lower_left + (sx * self.right) + (sy * self.up);
-                    rays.push(Ray::from_to(self.position, destination));
+
+                    let rd = (self.aperture * 0.5) * random_in_unit_disk();
+                    let offset = self.right * rd.x() + self.up * rd.y();
+                    rays.push(Ray::from_to(self.position + offset, destination));
                 }
                 pixel_rays.push(PixelRays { x, y, rays });
             }
@@ -92,14 +102,16 @@ impl Camera {
     }
 }
 
-#[test]
-fn camera_look_at() {
-    let from = Vec3::new(0.0, 0.0, 0.0);
-    let to: Vec3 = Vec3::new(0.0, 0.0, -1.0);
-
-    let cam = Camera::camera(from, to, 4.0, 2.0, 400, 225);
-
-    assert_eq!(cam.forward, Vec3::new(0.0, 0.0, 1.0));
-    assert_eq!(cam.right, Vec3::new(1.0, 0.0, 0.0));
-    assert_eq!(cam.up, Vec3::new(0.0, 1.0, 0.0));
+fn random_in_unit_disk() -> Vec3 {
+    loop {
+        let mut rng = rand::thread_rng();
+        let mut p = Vec3::new(
+            rng.gen_range(-1.0 .. 1.0),
+            rng.gen_range(-1.0 .. 1.0),
+            0.0
+        );
+        if p.len_squared() < 1.0 {
+            return p;
+        }
+    }
 }
