@@ -78,6 +78,10 @@ impl Vec3 {
     pub fn reflect(&self, normal: &Vec3) -> Vec3 {
         self - 2.0 * dot(self, normal) * normal
     }
+
+    pub fn near_zero(&self) -> bool {
+        self.x().abs() < 0.0000000001 && self.y().abs() < 0.0000000001 && self.z().abs() < 0.0000000001
+    }
 }
 
 impl fmt::Display for Vec3 {

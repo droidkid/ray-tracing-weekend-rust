@@ -34,9 +34,13 @@ impl Metal {
 
 impl Material for Lambertian {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterResult> {
-        let scatter_direction = hit_record.normal + random_in_unit_sphere();
+        let mut scatter_direction = hit_record.normal + random_in_unit_sphere();
+        if scatter_direction.near_zero() {
+            scatter_direction = hit_record.normal;
+        }
+
         Some(ScatterResult {
-            ray: Ray::from_to(hit_record.hit_point, scatter_direction),
+            ray: Ray::new(hit_record.hit_point, scatter_direction),
             attenuation: self.albedo,
         })
     }
@@ -46,7 +50,7 @@ impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterResult> {
         let unit_vector = ray_in.direction().unit_vector();
         let scatter_direction = unit_vector - 2.0 * dot(&unit_vector, &hit_record.normal) * hit_record.normal;
-        let scattered_ray = Ray::from_to(hit_record.hit_point, scatter_direction);
+        let scattered_ray = Ray::new(hit_record.hit_point, scatter_direction);
         if dot(scattered_ray.direction(), &hit_record.normal) > 0.0 {
             Some(ScatterResult {
                 ray: scattered_ray,

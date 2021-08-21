@@ -92,15 +92,15 @@ fn main() {
     let sphere3 = Sphere {
         center: Vec3::new(-1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Box::new(Lambertian::new(Vec3::new(0.2, 0.3, 0.7))),
+        material: Box::new(Metal::new(Vec3::new(0.8, 0.8, 0.8))),
     };
     let sphere4 = Sphere {
         center: Vec3::new(1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Box::new(Lambertian::new(Vec3::new(0.2, 0.7, 0.3))),
+        material: Box::new(Metal::new(Vec3::new(0.2, 0.7, 0.3))),
     };
 
-    let world = vec![&sphere2, &sphere1, &sphere3, &sphere4];
+    let world = vec![&sphere2, &sphere3, &sphere1, &sphere4];
 
     let samples_per_pixel: u32 = 100;
     let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
