@@ -1,6 +1,6 @@
+use rand::Rng;
 use std::fmt;
 use std::ops;
-use rand::Rng;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Vec3 {
@@ -30,12 +30,12 @@ impl Vec3 {
         }
     }
 
-    pub fn random(min: f64, max: f64)  -> Vec3 {
+    pub fn random(min: f64, max: f64) -> Vec3 {
         let mut rng = rand::thread_rng();
         Vec3 {
             x: rng.gen_range(min..max),
             y: rng.gen_range(min..max),
-            z: rng.gen_range(min..max)
+            z: rng.gen_range(min..max),
         }
     }
 
@@ -80,7 +80,9 @@ impl Vec3 {
     }
 
     pub fn near_zero(&self) -> bool {
-        self.x().abs() < 0.0000000001 && self.y().abs() < 0.0000000001 && self.z().abs() < 0.0000000001
+        self.x().abs() < 0.0000000001
+            && self.y().abs() < 0.0000000001
+            && self.z().abs() < 0.0000000001
     }
 }
 

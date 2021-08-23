@@ -18,11 +18,11 @@ pub struct Lambertian {
 
 pub struct Metal {
     albedo: Vec3,
-    fuzz: f64
+    fuzz: f64,
 }
 
 pub struct Dielectric {
-    index_of_refraction: f64
+    index_of_refraction: f64,
 }
 
 impl Lambertian {
@@ -42,16 +42,15 @@ impl Metal {
             fuzz = 0.0;
         }
 
-        Metal {
-            albedo,
-            fuzz
-        }
+        Metal { albedo, fuzz }
     }
 }
 
 impl Dielectric {
     pub fn new(index_of_refraction: f64) -> Dielectric {
-        Dielectric { index_of_refraction }
+        Dielectric {
+            index_of_refraction,
+        }
     }
 }
 
@@ -72,7 +71,8 @@ impl Material for Lambertian {
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterResult> {
         let unit_vector = ray_in.direction().unit_vector();
-        let scatter_direction = unit_vector.reflect(&hit_record.normal) + self.fuzz * random_in_unit_sphere();
+        let scatter_direction =
+            unit_vector.reflect(&hit_record.normal) + self.fuzz * random_in_unit_sphere();
         let scattered_ray = Ray::new(hit_record.hit_point, scatter_direction);
         if dot(scattered_ray.direction(), &hit_record.normal) > 0.0 {
             Some(ScatterResult {
@@ -89,7 +89,7 @@ impl Material for Dielectric {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterResult> {
         let refraction_ratio = match hit_record.front_face {
             true => 1.0 / self.index_of_refraction,
-            false => self.index_of_refraction
+            false => self.index_of_refraction,
         };
 
         fn refract(uv: &Vec3, normal: &Vec3, etai_over_etat: f64) -> Vec3 {
@@ -102,14 +102,14 @@ impl Material for Dielectric {
         fn reflectance(cos: f64, ref_idx: f64) -> f64 {
             let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
             r0 = r0 * r0;
-            return r0 + (1.0-r0)*((1.0-cos).powf(5.0))
+            return r0 + (1.0 - r0) * ((1.0 - cos).powf(5.0));
         }
 
         let unit_direction = ray_in.direction().normalize();
         let cos = (dot(&(unit_direction * -1.0), &hit_record.normal)).min(1.0);
         let sin = (1.0 - cos * cos).sqrt();
 
-        let cannot_refract = (refraction_ratio * sin)> 1.0;
+        let cannot_refract = (refraction_ratio * sin) > 1.0;
         let direction;
 
         if cannot_refract || reflectance(cos, refraction_ratio) > random_double() {
@@ -117,9 +117,9 @@ impl Material for Dielectric {
         } else {
             direction = refract(&unit_direction, &hit_record.normal, refraction_ratio);
         }
-        Some(ScatterResult{
+        Some(ScatterResult {
             ray: Ray::new(hit_record.hit_point, direction),
-            attenuation: Vec3::new(1.0, 1.0, 1.0)
+            attenuation: Vec3::new(1.0, 1.0, 1.0),
         })
     }
 }

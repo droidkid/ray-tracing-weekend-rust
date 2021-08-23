@@ -13,8 +13,8 @@ mod vec3;
 use crate::camera::Camera;
 use crate::camera::PixelRays;
 use crate::color::Color;
-use crate::hittable::{Hittable, HitRecord};
-use crate::material::{Lambertian, Metal, Dielectric};
+use crate::hittable::{HitRecord, Hittable};
+use crate::material::{Dielectric, Lambertian, Metal};
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3::Vec3;
@@ -42,7 +42,9 @@ fn ray_color(spheres: &Vec<Sphere>, ray: &Ray, depth: u32) -> Color {
 
     if nearest_hit_record.is_some() {
         let nearest_hit_record = nearest_hit_record.unwrap();
-        let scatter_result = nearest_hit_record.material.scatter(ray, &nearest_hit_record);
+        let scatter_result = nearest_hit_record
+            .material
+            .scatter(ray, &nearest_hit_record);
         match scatter_result {
             Some(scatter_result) => {
                 return ray_color(spheres, &scatter_result.ray, depth - 1)
@@ -103,9 +105,13 @@ fn main() {
     let mut world = vec![ground, sphere2, sphere1, sphere3];
     let mut rng = rand::thread_rng();
 
-    for a in -11.. 11 {
-        for b in -11 .. 11 {
-            let center = Vec3::new(a as f64 + 0.9*rng.gen::<f64>(), 0.2, b as f64 + 0.9 * rng.gen::<f64>());
+    for a in -11..11 {
+        for b in -11..11 {
+            let center = Vec3::new(
+                a as f64 + 0.9 * rng.gen::<f64>(),
+                0.2,
+                b as f64 + 0.9 * rng.gen::<f64>(),
+            );
             if (center - Vec3::new(4.0, 0.2, 0.0)).len() < 0.9 {
                 continue;
             }
@@ -116,21 +122,19 @@ fn main() {
                 sphere = Sphere {
                     center,
                     radius: 0.2,
-                    material: Box::new(Lambertian::new(Vec3::random(0.0, 1.0)))
+                    material: Box::new(Lambertian::new(Vec3::random(0.0, 1.0))),
                 }
             } else if (choose_mat < 0.95) {
                 sphere = Sphere {
                     center,
                     radius: 0.2,
                 }
-            }
-            else {
+            } else {
                 sphere = Sphere {
                     center,
                     radius: 0.2,
-                    material: Box::new(Dielectric::new(1.5))
+                    material: Box::new(Dielectric::new(1.5)),
                 }
-
             }
             world.push(sphere);
         }
@@ -142,7 +146,7 @@ fn main() {
     for pixel_ray in pixel_rays {
         let mut sampled_colors: Vec<Color> = vec![];
         for ray in pixel_ray.rays {
-             sampled_colors.push(ray_color(&world, &ray, 100));
+            sampled_colors.push(ray_color(&world, &ray, 100));
         }
 
         let color = Color::average_color(sampled_colors.iter()).gamma_corrected();

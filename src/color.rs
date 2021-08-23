@@ -5,10 +5,10 @@ pub struct Color {
 }
 
 impl Color {
-    pub fn new(r: f64, g:f64, b:f64)  -> Color {
+    pub fn new(r: f64, g: f64, b: f64) -> Color {
         Color {
             // TODO(chesetti): Do something if any component greater than 1
-            rgb: Vec3::new(r, g, b)
+            rgb: Vec3::new(r, g, b),
         }
     }
 
@@ -57,7 +57,11 @@ impl Color {
     }
 
     pub fn gamma_corrected(&self) -> Color {
-        Color::new(self.rgb.x().sqrt(), self.rgb.y().sqrt(), self.rgb.z().sqrt())
+        Color::new(
+            self.rgb.x().sqrt(),
+            self.rgb.y().sqrt(),
+            self.rgb.z().sqrt(),
+        )
     }
 
     pub fn average_color<'a>(colors: impl Iterator<Item = &'a Color>) -> Color {
@@ -67,6 +71,10 @@ impl Color {
             total_rgb = total_rgb + color.rgb;
             count = count + 1.0
         }
-        Color::new(total_rgb.x() / count, total_rgb.y() / count, total_rgb.z() / count)
+        Color::new(
+            total_rgb.x() / count,
+            total_rgb.y() / count,
+            total_rgb.z() / count,
+        )
     }
 }

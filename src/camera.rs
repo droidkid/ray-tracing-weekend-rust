@@ -50,7 +50,7 @@ impl Camera {
         let theta = vertical_fov.to_radians();
         let h = (theta * 0.5).tan();
         let viewport_height = 2.0 * h;
-        let viewport_width= aspect_ratio * viewport_height;
+        let viewport_width = aspect_ratio * viewport_height;
 
         Camera {
             position: from,
@@ -87,8 +87,11 @@ impl Camera {
                     let px: f64 = x as f64 + rng.gen::<f64>();
                     let py: f64 = y as f64 + rng.gen::<f64>();
 
-                    let sx = self.focus_dist * self.viewport_width * (px / self.raster_width as f64);
-                    let sy = self.focus_dist * self.viewport_height * (self.raster_height as f64 - py) / self.raster_height as f64;
+                    let sx =
+                        self.focus_dist * self.viewport_width * (px / self.raster_width as f64);
+                    let sy =
+                        self.focus_dist * self.viewport_height * (self.raster_height as f64 - py)
+                            / self.raster_height as f64;
                     let destination = viewport_lower_left + (sx * self.right) + (sy * self.up);
 
                     let rd = (self.aperture * 0.5) * random_in_unit_disk();
@@ -105,11 +108,7 @@ impl Camera {
 fn random_in_unit_disk() -> Vec3 {
     loop {
         let mut rng = rand::thread_rng();
-        let mut p = Vec3::new(
-            rng.gen_range(-1.0 .. 1.0),
-            rng.gen_range(-1.0 .. 1.0),
-            0.0
-        );
+        let mut p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
         if p.len_squared() < 1.0 {
             return p;
         }

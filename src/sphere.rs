@@ -18,7 +18,12 @@ impl Hittable for Sphere {
         let c = dot(&oc, &oc) - (self.radius * self.radius);
         let discriminant = b * b - 4.0 * a * c;
 
-        fn build_hit_record<'a, 'b>(ray: &'b Ray, t: f64, outward_normal: Vec3, material: &'a Box<dyn Material>) -> HitRecord<'a> {
+        fn build_hit_record<'a, 'b>(
+            ray: &'b Ray,
+            t: f64,
+            outward_normal: Vec3,
+            material: &'a Box<dyn Material>,
+        ) -> HitRecord<'a> {
             let hitting_front_face = dot(ray.direction(), &outward_normal) < 0.0;
             HitRecord {
                 hit_point: ray.at(t),
@@ -29,7 +34,7 @@ impl Hittable for Sphere {
                 },
                 front_face: hitting_front_face,
                 t,
-                material
+                material,
             }
         }
 
@@ -42,14 +47,14 @@ impl Hittable for Sphere {
                     ray,
                     t1,
                     (ray.at(t1) - self.center) * (1.0 / self.radius),
-                    &self.material
+                    &self.material,
                 ))
             } else if t2 > t_min && t2 < t_max {
                 Some(build_hit_record(
                     ray,
                     t2,
                     (ray.at(t2) - self.center) * (1.0 / self.radius),
-                    &self.material
+                    &self.material,
                 ))
             } else {
                 None
