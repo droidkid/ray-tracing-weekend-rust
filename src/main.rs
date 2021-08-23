@@ -18,8 +18,9 @@ use crate::material::{Lambertian, Metal, Dielectric};
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3::Vec3;
+use rand::Rng;
 
-fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Color {
+fn ray_color(spheres: &Vec<Sphere>, ray: &Ray, depth: u32) -> Color {
     if depth <= 0 {
         return Color::black();
     }
@@ -59,52 +60,82 @@ fn ray_color(spheres: &Vec<&Sphere>, ray: &Ray, depth: u32) -> Color {
 
 fn main() {
     // Camera & Viewport
-    let aspect_ratio = 16.0 / 9.0;
-    let img_width = 400;
+    let aspect_ratio = 3.0 / 2.0;
+    let img_width = 1200;
     let img_height = (img_width as f64 / aspect_ratio) as u32;
+    let samples_per_pixel: u32 = 100;
 
     let camera = Camera::camera(
-        Vec3::new(3.0, 3.0, 2.0),
-        Vec3::new(0.0, 0.0, -1.0),
+        Vec3::new(13.0, 2.0, 3.0),
+        Vec3::new(0.0, 0.0, 0.0),
         Vec3::new(0.0, 1.0, 0.0),
-        2.0,
-        (27.0_f64).sqrt(),
+        0.1,
+        10.0,
         20.0,
-        16.0 / 9.0,
+        aspect_ratio,
         img_width,
         img_height,
     );
 
-    // Sphere in real world coordinates
-    let sphere1 = Sphere {
-        center: Vec3::new(0.0, 0.0, -1.0),
-        radius: 0.5,
-         material: Box::new(Lambertian::new(Vec3::new(1.0, 0.5, 0.5))),
-    };
-    let sphere2 = Sphere {
-        center: Vec3::new(0.0, -100.5, -1.0),
-        radius: 100.0,
+    let ground = Sphere {
+        center: Vec3::new(0.0, -1000.0, 0.0),
+        radius: 1000.0,
         material: Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
     };
-    let sphere3_out = Sphere {
-        center: Vec3::new(-1.0, 0.0, -1.0),
-        radius: 0.5,
+
+    // Sphere in real world coordinates
+    let sphere1 = Sphere {
         material: Box::new(Dielectric::new(1.5)),
+        center: Vec3::new(0.0, 1.0, 0.0),
+        radius: 1.0,
     };
-    let sphere3_in = Sphere {
-        center: Vec3::new(-1.0, 0.0, -1.0),
-        radius: -0.4,
-        material: Box::new(Dielectric::new(1.5)),
+    let sphere2 = Sphere {
+        center: Vec3::new(-4.0, 1.0, 0.0),
+        radius: 1.0,
+        material: Box::new(Lambertian::new(Vec3::new(1.0, 0.5, 0.5))),
     };
-    let sphere4 = Sphere {
-        center: Vec3::new(1.0, 0.0, -1.0),
-        radius: 0.5,
-        material: Box::new(Metal::new(Vec3::new(0.2, 0.7, 0.3), 0.3)),
+    let sphere3 = Sphere {
+        center: Vec3::new(4.0, 1.0, 0.0),
+        radius: 1.0,
+        material: Box::new(Metal::new(Vec3::new(0.7, 0.7, 0.6), 0.0)),
     };
 
-    let world = vec![&sphere2, &sphere3_in, &sphere3_out, &sphere1, &sphere4];
+    let mut world = vec![ground, sphere2, sphere1, sphere3];
+    let mut rng = rand::thread_rng();
 
-    let samples_per_pixel: u32 = 100;
+    for a in -11.. 11 {
+        for b in -11 .. 11 {
+            let center = Vec3::new(a as f64 + 0.9*rng.gen::<f64>(), 0.2, b as f64 + 0.9 * rng.gen::<f64>());
+            if (center - Vec3::new(4.0, 0.2, 0.0)).len() < 0.9 {
+                continue;
+            }
+
+            let choose_mat = rng.gen::<f64>();
+            let sphere;
+            if (choose_mat < 0.8) {
+                sphere = Sphere {
+                    center,
+                    radius: 0.2,
+                    material: Box::new(Lambertian::new(Vec3::random(0.0, 1.0)))
+                }
+            } else if (choose_mat < 0.95) {
+                sphere = Sphere {
+                    center,
+                    radius: 0.2,
+                }
+            }
+            else {
+                sphere = Sphere {
+                    center,
+                    radius: 0.2,
+                    material: Box::new(Dielectric::new(1.5))
+                }
+
+            }
+            world.push(sphere);
+        }
+    }
+
     let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
 
     let mut img_buf = image::ImageBuffer::new(img_width, img_height);

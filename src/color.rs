@@ -20,6 +20,12 @@ impl Color {
         Color::new(0.0, 0.0, 0.0)
     }
 
+    pub fn random() -> Color {
+        Color {
+            rgb: Vec3::random(0.0, 1.0),
+        }
+    }
+
     pub fn lerp(start_color: Color, end_color: Color, param: f64) -> Color {
         Color {
             rgb: start_color.rgb * (1.0 - param) + end_color.rgb * param,

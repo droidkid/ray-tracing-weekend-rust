@@ -1,7 +1,7 @@
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::{dot, Vec3};
-use rand::{thread_rng, Rng};
+use rand::Rng;
 
 pub struct ScatterResult {
     pub ray: Ray,
@@ -110,7 +110,7 @@ impl Material for Dielectric {
         let sin = (1.0 - cos * cos).sqrt();
 
         let cannot_refract = (refraction_ratio * sin)> 1.0;
-        let mut direction;
+        let direction;
 
         if cannot_refract || reflectance(cos, refraction_ratio) > random_double() {
             direction = unit_direction.reflect(&hit_record.normal);
