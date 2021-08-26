@@ -20,8 +20,8 @@ pub struct Camera {
     focus_dist: f64,
 
     // Viewport to Screen stuff
-    raster_width: u32,
-    raster_height: u32,
+    pub raster_width: u32,
+    pub raster_height: u32,
 }
 
 pub struct PixelRays {
@@ -108,7 +108,7 @@ impl Camera {
 fn random_in_unit_disk() -> Vec3 {
     loop {
         let mut rng = rand::thread_rng();
-        let mut p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        let p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
         if p.len_squared() < 1.0 {
             return p;
         }
