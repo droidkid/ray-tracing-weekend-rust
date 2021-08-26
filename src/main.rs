@@ -118,16 +118,17 @@ fn main() {
 
             let choose_mat = rng.gen::<f64>();
             let sphere;
-            if (choose_mat < 0.8) {
+            if choose_mat < 0.8 {
                 sphere = Sphere {
                     center,
                     radius: 0.2,
                     material: Box::new(Lambertian::new(Vec3::random(0.0, 1.0))),
                 }
-            } else if (choose_mat < 0.95) {
+            } else if choose_mat < 0.95 {
                 sphere = Sphere {
                     center,
                     radius: 0.2,
+                    material: Box::new(Metal::new(Vec3::random(0.0, 1.0), 0.0)),
                 }
             } else {
                 sphere = Sphere {
