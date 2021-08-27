@@ -1,13 +1,14 @@
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
+use std::sync::Arc;
 
 pub struct HitRecord<'a> {
     pub hit_point: Vec3,
     pub normal: Vec3,
     pub front_face: bool,
     pub t: f64,
-    pub material: &'a Box<dyn Material>,
+    pub material: Arc<&'a Box<dyn Material + Send + Sync>>,
 }
 
 pub trait Hittable {

@@ -18,6 +18,7 @@ use crate::sphere::Sphere;
 use crate::vec3::Vec3;
 use rand::Rng;
 use crate::world::World;
+use std::sync::Arc;
 
 
 fn main() {
@@ -42,9 +43,8 @@ fn main() {
     let ground = Sphere {
         center: Vec3::new(0.0, -1000.0, 0.0),
         radius: 1000.0,
-        material: Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
+        material: (Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)))),
     };
-
     let sphere1 = Sphere {
         material: Box::new(Dielectric::new(1.5)),
         center: Vec3::new(0.0, 1.0, 0.0),
@@ -61,7 +61,7 @@ fn main() {
         material: Box::new(Metal::new(Vec3::new(0.7, 0.7, 0.6), 0.0)),
     };
 
-    let mut objects: Vec<Box<dyn Hittable>> = vec![Box::new(ground), Box::new(sphere2), Box::new(sphere1), Box::new(sphere3)];
+    let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![Box::new(ground), Box::new(sphere1), Box::new(sphere2), Box::new(sphere3)];
 
     let mut rng = rand::thread_rng();
     for a in -11..11 {
@@ -100,6 +100,6 @@ fn main() {
         }
     }
 
-    let world = World::new(objects);
-    world.render("render.png", &camera, samples_per_pixel);
+    let world = World::new(Arc::new(objects));
+    world::render(world, "render.png", &camera, samples_per_pixel, 8);
 }

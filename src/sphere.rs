@@ -2,12 +2,13 @@ use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{dot, Vec3};
+use std::sync::Arc;
 
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
     // TODO(chesetti): Make material reference? You might want to share materials?
-    pub material: Box<dyn Material>,
+    pub material: Box<dyn Material + Send + Sync>,
 }
 
 impl Hittable for Sphere {
@@ -22,7 +23,7 @@ impl Hittable for Sphere {
             ray: &'b Ray,
             t: f64,
             outward_normal: Vec3,
-            material: &'a Box<dyn Material>,
+            material: &'a Box<dyn Material + Send + Sync>,
         ) -> HitRecord<'a> {
             let hitting_front_face = dot(ray.direction(), &outward_normal) < 0.0;
             HitRecord {
@@ -34,7 +35,7 @@ impl Hittable for Sphere {
                 },
                 front_face: hitting_front_face,
                 t,
-                material,
+                material: Arc::new(material),
             }
         }
 
