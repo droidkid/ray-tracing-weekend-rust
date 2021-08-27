@@ -16,7 +16,7 @@ impl World {
         }
     }
 
-    pub fn render(&self, camera: &Camera, samples_per_pixel: u32) {
+    pub fn render(&self, filename: &str, camera: &Camera, samples_per_pixel: u32) {
         let mut img_buf = ImageBuffer::new(camera.raster_width, camera.raster_height);
         let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
 
@@ -29,7 +29,7 @@ impl World {
             let color = Color::average_color(sampled_colors.iter()).gamma_corrected();
             img_buf.put_pixel(pixel_ray.x, pixel_ray.y, color.image_pixel());
         }
-        img_buf.save("gradient.png").unwrap();
+        img_buf.save(filename).unwrap();
     }
 
     fn ray_color(&self, ray: &Ray, depth: u32) -> Color {

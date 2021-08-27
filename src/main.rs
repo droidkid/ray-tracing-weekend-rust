@@ -101,5 +101,5 @@ fn main() {
     }
 
     let world = World::new(objects);
-    world.render(&camera, samples_per_pixel);
+    world.render("render.png", &camera, samples_per_pixel);
 }
