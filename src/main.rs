@@ -19,6 +19,7 @@ use crate::vec3::Vec3;
 use rand::Rng;
 use crate::world::World;
 use std::sync::Arc;
+use std::time::Instant;
 
 
 fn main() {
@@ -101,5 +102,9 @@ fn main() {
     }
 
     let world = World::new(Arc::new(objects));
-    world::render(world, "render.png", &camera, samples_per_pixel, 8);
+
+    let now = Instant::now();
+    world::render(world, "render.png", &camera, samples_per_pixel, 16);
+    let elapsed = now.elapsed();
+    println!("Wrote render.png in {} seconds", elapsed.as_secs())
 }
