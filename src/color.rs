@@ -1,5 +1,7 @@
 use crate::vec3::Vec3;
+use std::ops;
 
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Color {
     rgb: Vec3,
 }
@@ -23,6 +25,12 @@ impl Color {
     pub fn random() -> Color {
         Color {
             rgb: Vec3::random(0.0, 1.0),
+        }
+    }
+
+    pub fn new_from_vector(rgb: Vec3) -> Color {
+        Color {
+            rgb
         }
     }
 
@@ -78,3 +86,15 @@ impl Color {
         )
     }
 }
+
+impl_op_ex!(+ |a: &Color, b: &Color | -> Color {
+    let rgb = a.rgb + b.rgb;
+    let rgb = Vec3::new(
+        rgb.x().clamp(0.0, 256.0),
+        rgb.y().clamp(0.0, 256.0),
+        rgb.z().clamp(0.0, 256.0),
+    );
+    Color {
+        rgb
+    }
+});

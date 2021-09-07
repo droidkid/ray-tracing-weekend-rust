@@ -99,20 +99,16 @@ fn ray_color(objects: &Vec<Box<Hittable + Send + Sync>> ,ray: &Ray, depth: u32) 
 
     if nearest_hit_record.is_some() {
         let nearest_hit_record = nearest_hit_record.unwrap();
-        let scatter_result = nearest_hit_record
-            .material
-            .scatter(ray, &nearest_hit_record);
-        match scatter_result {
-            Some(scatter_result) => {
-                return ray_color(objects, &scatter_result.ray, depth - 1)
-                    .attenuate(scatter_result.attenuation);
-            }
-            None => Color::black(),
+        let scatter_result = nearest_hit_record.material.scatter(ray, &nearest_hit_record);
+
+        return if scatter_result.scattered_ray.is_some() {
+            scatter_result.emitted + ray_color(objects, &scatter_result.scattered_ray.unwrap(), depth - 1)
+                .attenuate(scatter_result.attenuation)
+        } else {
+            scatter_result.emitted
         }
     } else {
-        let unit_direction = ray.direction().normalize();
-        let background_param = 0.5 * (unit_direction.y() + 1.0);
-        let blueish = Color::new(0.5, 0.7, 1.0);
-        Color::lerp(Color::white(), blueish, background_param)
+        // TODO(chesetti): Is background being black always ok?
+        Color::black()
     }
 }

@@ -13,13 +13,14 @@ mod world;
 
 use crate::camera::Camera;
 use crate::hittable::Hittable;
-use crate::material::{Dielectric, Lambertian, Metal};
+use crate::material::{Dielectric, Lambertian, Metal, DiffuseLight};
 use crate::sphere::Sphere;
 use crate::vec3::Vec3;
 use rand::Rng;
 use crate::world::World;
 use std::sync::Arc;
 use std::time::Instant;
+use crate::color::Color;
 
 
 fn main() {
@@ -54,7 +55,8 @@ fn main() {
     let sphere2 = Sphere {
         center: Vec3::new(-4.0, 1.0, 0.0),
         radius: 1.0,
-        material: Box::new(Lambertian::new(Vec3::new(1.0, 0.5, 0.5))),
+        material: Box::new(DiffuseLight::new(Color::white()))
+        // material: Box::new(Lambertian::new(Vec3::new(1.0, 0.5, 0.5))),
     };
     let sphere3 = Sphere {
         center: Vec3::new(4.0, 1.0, 0.0),
@@ -62,7 +64,23 @@ fn main() {
         material: Box::new(Metal::new(Vec3::new(0.7, 0.7, 0.6), 0.0)),
     };
 
-    let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![Box::new(ground), Box::new(sphere1), Box::new(sphere2), Box::new(sphere3)];
+    let light1 = Sphere {
+        center: Vec3::new(4.0, 5000.0, 0.0),
+        radius: 1000.0,
+        material: Box::new(DiffuseLight::new(Color::white())),
+    };
+    let light2 = Sphere {
+        center: Vec3::new(-4000.0, 5000.0, 0.0),
+        radius: 1000.0,
+        material: Box::new(DiffuseLight::new(Color::white())),
+    };
+    let light3 = Sphere {
+        center: Vec3::new(4000.0, 5000.0, 0.0),
+        radius: 1000.0,
+        material: Box::new(DiffuseLight::new(Color::white())),
+    };
+
+    let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![Box::new(ground), Box::new(sphere1), Box::new(sphere2), Box::new(sphere3), Box::new(light1), Box::new(light2), Box::new(light3)];
 
     let mut rng = rand::thread_rng();
     for a in -11..11 {

@@ -2,14 +2,17 @@ use crate::hittable::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::{dot, Vec3};
 use rand::Rng;
+use crate::color::Color;
 
 pub struct ScatterResult {
-    pub ray: Ray,
+    pub scattered_ray: Option<Ray>,
+    // TODO(chesetti): Should attenuation be color?
     pub attenuation: Vec3,
+    pub emitted: Color,
 }
 
 pub trait Material {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterResult>;
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> ScatterResult;
 }
 
 pub struct Lambertian {
@@ -23,6 +26,10 @@ pub struct Metal {
 
 pub struct Dielectric {
     index_of_refraction: f64,
+}
+
+pub struct DiffuseLight {
+    emit_color: Color,
 }
 
 impl Lambertian {
@@ -54,39 +61,53 @@ impl Dielectric {
     }
 }
 
+impl DiffuseLight {
+    pub fn new(emit_color: Color) -> DiffuseLight {
+        DiffuseLight {
+            emit_color
+        }
+    }
+}
+
 impl Material for Lambertian {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterResult> {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> ScatterResult {
         let mut scatter_direction = hit_record.normal + random_in_unit_sphere();
         if scatter_direction.near_zero() {
             scatter_direction = hit_record.normal;
         }
 
-        Some(ScatterResult {
-            ray: Ray::new(hit_record.hit_point, scatter_direction),
+        ScatterResult {
+            scattered_ray: Some(Ray::new(hit_record.hit_point, scatter_direction)),
             attenuation: self.albedo,
-        })
+            emitted: Color::black()
+        }
     }
 }
 
 impl Material for Metal {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterResult> {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> ScatterResult {
         let unit_vector = ray_in.direction().unit_vector();
         let scatter_direction =
             unit_vector.reflect(&hit_record.normal) + self.fuzz * random_in_unit_sphere();
         let scattered_ray = Ray::new(hit_record.hit_point, scatter_direction);
         if dot(scattered_ray.direction(), &hit_record.normal) > 0.0 {
-            Some(ScatterResult {
-                ray: scattered_ray,
+            ScatterResult {
+                scattered_ray: Some(scattered_ray),
                 attenuation: self.albedo,
-            })
+                emitted: Color::black()
+            }
         } else {
-            None
+            ScatterResult {
+                scattered_ray: None,
+                attenuation: self.albedo,
+                emitted: Color::black()
+            }
         }
     }
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterResult> {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> ScatterResult {
         let refraction_ratio = match hit_record.front_face {
             true => 1.0 / self.index_of_refraction,
             false => self.index_of_refraction,
@@ -117,10 +138,21 @@ impl Material for Dielectric {
         } else {
             direction = refract(&unit_direction, &hit_record.normal, refraction_ratio);
         }
-        Some(ScatterResult {
-            ray: Ray::new(hit_record.hit_point, direction),
+        ScatterResult {
+            scattered_ray: Some(Ray::new(hit_record.hit_point, direction)),
             attenuation: Vec3::new(1.0, 1.0, 1.0),
-        })
+            emitted: Color::black()
+        }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> ScatterResult {
+        ScatterResult {
+            scattered_ray: None,
+            attenuation: Vec3::new(0.0, 0.0, 0.0),
+            emitted: self.emit_color
+        }
     }
 }
 
