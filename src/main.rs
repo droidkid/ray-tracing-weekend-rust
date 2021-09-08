@@ -10,6 +10,7 @@ mod ray;
 mod sphere;
 mod vec3;
 mod world;
+mod plane;
 
 use crate::camera::Camera;
 use crate::hittable::Hittable;
@@ -21,6 +22,7 @@ use crate::world::World;
 use std::sync::Arc;
 use std::time::Instant;
 use crate::color::Color;
+use crate::plane::Plane;
 
 
 fn main() {
@@ -80,7 +82,18 @@ fn main() {
         material: Box::new(DiffuseLight::new(Color::white())),
     };
 
-    let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![Box::new(ground), Box::new(sphere1), Box::new(sphere2), Box::new(sphere3), Box::new(light1), Box::new(light2), Box::new(light3)];
+    let plane_light = Plane::xy_plane(-1000.0, Box::new(DiffuseLight::new(Color::white())));
+
+    let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![
+        Box::new(plane_light) ,
+        Box::new(ground),
+        Box::new(sphere1),
+        Box::new(sphere2),
+        Box::new(sphere3),
+        Box::new(light1),
+        Box::new(light2),
+        Box::new(light3)
+    ];
 
     let mut rng = rand::thread_rng();
     for a in -11..11 {
