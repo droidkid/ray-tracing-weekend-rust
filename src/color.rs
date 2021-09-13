@@ -85,6 +85,10 @@ impl Color {
             total_rgb.z() / count,
         )
     }
+
+    pub fn as_vector(&self) -> Vec3 {
+        self.rgb
+    }
 }
 
 impl_op_ex!(+ |a: &Color, b: &Color | -> Color {

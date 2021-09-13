@@ -35,6 +35,8 @@ impl Hittable for Sphere {
                 },
                 front_face: hitting_front_face,
                 t,
+                u: 0.0, // TODO(): implement
+                v: 0.0, // TODO(): implement!
                 material: Arc::new(material),
             }
         }

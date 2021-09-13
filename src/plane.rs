@@ -45,6 +45,8 @@ impl Hittable for Plane {
             },
             front_face: true,
             t,
+            u: 0.0, // TODO(): implement
+            v: 0.0, // TODO(): implement!
             material: Arc::new(&Box::new(&self.material))
         })
 

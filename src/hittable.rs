@@ -8,6 +8,8 @@ pub struct HitRecord<'a> {
     pub normal: Vec3,
     pub front_face: bool,
     pub t: f64,
+    pub u: f64,
+    pub v: f64,
     pub material: Arc<&'a Box<dyn Material + Send + Sync>>,
 }
 

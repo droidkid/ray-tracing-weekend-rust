@@ -11,6 +11,7 @@ mod sphere;
 mod vec3;
 mod world;
 mod plane;
+mod texture;
 
 use crate::camera::Camera;
 use crate::hittable::Hittable;
@@ -23,6 +24,7 @@ use std::sync::Arc;
 use std::time::Instant;
 use crate::color::Color;
 use crate::plane::Plane;
+use crate::texture::CheckeredTexture;
 
 
 fn main() {
@@ -82,7 +84,8 @@ fn main() {
         material: Box::new(DiffuseLight::new(Color::white())),
     };
 
-    let plane_light = Plane::xy_plane(-1000.0, Box::new(DiffuseLight::new(Color::white())));
+    let checkered_texture = Box::new(CheckeredTexture::new(Color::random(), Color::random(), 1.0));
+    let plane_light = Plane::xy_plane(-10.0, Box::new(Lambertian::new_from_texture(checkered_texture)));
 
     let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![
         Box::new(plane_light) ,

@@ -79,7 +79,7 @@ fn get_pixel_color(objects: &Vec<Box<Hittable + Send + Sync>>, pixel_ray: &Pixel
 
 fn ray_color(objects: &Vec<Box<Hittable + Send + Sync>> ,ray: &Ray, depth: u32) -> Color {
     if depth <= 0 {
-        return Color::black();
+        return Color::white();
     }
     let mut nearest_hit_record: Option<HitRecord> = None;
     let mut nearest_t = 0.0;
@@ -108,7 +108,7 @@ fn ray_color(objects: &Vec<Box<Hittable + Send + Sync>> ,ray: &Ray, depth: u32) 
             scatter_result.emitted
         }
     } else {
-        // TODO(chesetti): Is background being black always ok?
-        Color::black()
+        // TODO(chesetti): Is background being white always ok?
+        Color::white()
     }
 }

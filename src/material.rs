@@ -3,6 +3,7 @@ use crate::ray::Ray;
 use crate::vec3::{dot, Vec3};
 use rand::Rng;
 use crate::color::Color;
+use crate::texture::{SolidColorTexture, Texture};
 
 pub struct ScatterResult {
     pub scattered_ray: Option<Ray>,
@@ -16,7 +17,7 @@ pub trait Material {
 }
 
 pub struct Lambertian {
-    albedo: Vec3,
+    texture: Box<dyn Texture + Send + Sync>,
 }
 
 pub struct Metal {
@@ -34,7 +35,15 @@ pub struct DiffuseLight {
 
 impl Lambertian {
     pub fn new(albedo: Vec3) -> Lambertian {
-        Lambertian { albedo }
+        Lambertian {
+            texture: Box::new(SolidColorTexture::new(Color::new_from_vector(albedo))),
+        }
+    }
+
+    pub fn new_from_texture(texture: Box<dyn Texture + Send + Sync>) -> Lambertian {
+        Lambertian {
+            texture
+        }
     }
 }
 
@@ -78,7 +87,7 @@ impl Material for Lambertian {
 
         ScatterResult {
             scattered_ray: Some(Ray::new(hit_record.hit_point, scatter_direction)),
-            attenuation: self.albedo,
+            attenuation: self.texture.get_color(hit_record.u, hit_record.v, hit_record.hit_point).as_vector(),
             emitted: Color::black()
         }
     }
