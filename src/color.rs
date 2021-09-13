@@ -29,9 +29,7 @@ impl Color {
     }
 
     pub fn new_from_vector(rgb: Vec3) -> Color {
-        Color {
-            rgb
-        }
+        Color { rgb }
     }
 
     pub fn lerp(start_color: Color, end_color: Color, param: f64) -> Color {

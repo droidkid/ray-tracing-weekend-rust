@@ -1,9 +1,9 @@
+use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
+use crate::texture::{SolidColorTexture, Texture};
 use crate::vec3::{dot, Vec3};
 use rand::Rng;
-use crate::color::Color;
-use crate::texture::{SolidColorTexture, Texture};
 
 pub struct ScatterResult {
     pub scattered_ray: Option<Ray>,
@@ -41,9 +41,7 @@ impl Lambertian {
     }
 
     pub fn new_from_texture(texture: Box<dyn Texture + Send + Sync>) -> Lambertian {
-        Lambertian {
-            texture
-        }
+        Lambertian { texture }
     }
 }
 
@@ -72,14 +70,12 @@ impl Dielectric {
 
 impl DiffuseLight {
     pub fn new(emit_color: Color) -> DiffuseLight {
-        DiffuseLight {
-            emit_color
-        }
+        DiffuseLight { emit_color }
     }
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> ScatterResult {
+    fn scatter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> ScatterResult {
         let mut scatter_direction = hit_record.normal + random_in_unit_sphere();
         if scatter_direction.near_zero() {
             scatter_direction = hit_record.normal;
@@ -87,8 +83,11 @@ impl Material for Lambertian {
 
         ScatterResult {
             scattered_ray: Some(Ray::new(hit_record.hit_point, scatter_direction)),
-            attenuation: self.texture.get_color(hit_record.u, hit_record.v, hit_record.hit_point).as_vector(),
-            emitted: Color::black()
+            attenuation: self
+                .texture
+                .get_color(hit_record.u, hit_record.v, hit_record.hit_point)
+                .as_vector(),
+            emitted: Color::black(),
         }
     }
 }
@@ -103,13 +102,13 @@ impl Material for Metal {
             ScatterResult {
                 scattered_ray: Some(scattered_ray),
                 attenuation: self.albedo,
-                emitted: Color::black()
+                emitted: Color::black(),
             }
         } else {
             ScatterResult {
                 scattered_ray: None,
                 attenuation: self.albedo,
-                emitted: Color::black()
+                emitted: Color::black(),
             }
         }
     }
@@ -150,17 +149,17 @@ impl Material for Dielectric {
         ScatterResult {
             scattered_ray: Some(Ray::new(hit_record.hit_point, direction)),
             attenuation: Vec3::new(1.0, 1.0, 1.0),
-            emitted: Color::black()
+            emitted: Color::black(),
         }
     }
 }
 
 impl Material for DiffuseLight {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> ScatterResult {
+    fn scatter(&self, _ray_in: &Ray, _hit_record: &HitRecord) -> ScatterResult {
         ScatterResult {
             scattered_ray: None,
             attenuation: Vec3::new(0.0, 0.0, 0.0),
-            emitted: self.emit_color
+            emitted: self.emit_color,
         }
     }
 }

@@ -6,46 +6,46 @@ pub trait Texture {
 }
 
 pub struct SolidColorTexture {
-    color: Color
+    color: Color,
 }
 
 pub struct CheckeredTexture {
-    evenColor: Color,
-    oddColor: Color,
-    sizeFactor: f64
+    even_color: Color,
+    odd_color: Color,
+    size_factor: f64,
 }
 
 impl SolidColorTexture {
     pub fn new(color: Color) -> SolidColorTexture {
-        SolidColorTexture {
-            color
-        }
+        SolidColorTexture { color }
     }
 }
 
 impl Texture for SolidColorTexture {
-    fn get_color(&self, u: f64, v: f64, point: Vec3) -> Color {
+    fn get_color(&self, _u: f64, _v: f64, _point: Vec3) -> Color {
         self.color
     }
 }
 
-impl CheckeredTexture{
-    pub fn new(evenColor: Color, oddColor: Color, sizeFactor: f64) -> CheckeredTexture {
+impl CheckeredTexture {
+    pub fn new(even_color: Color, odd_color: Color, size_factor: f64) -> CheckeredTexture {
         CheckeredTexture {
-            evenColor,
-            oddColor,
-            sizeFactor
+            even_color,
+            odd_color,
+            size_factor,
         }
     }
 }
 
 impl Texture for CheckeredTexture {
-    fn get_color(&self, u: f64, v: f64, point: Vec3) -> Color {
-        let sines = (point.x() / self.sizeFactor).sin() * (point.y() / self.sizeFactor).sin() * (point.z() / self.sizeFactor).sin();
+    fn get_color(&self, _u: f64, _v: f64, point: Vec3) -> Color {
+        let sines = (point.x() / self.size_factor).sin()
+            * (point.y() / self.size_factor).sin()
+            * (point.z() / self.size_factor).sin();
         if sines < 0.0 {
-            self.oddColor
+            self.odd_color
         } else {
-            self.evenColor
+            self.even_color
         }
     }
 }

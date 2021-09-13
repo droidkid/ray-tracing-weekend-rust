@@ -6,26 +6,25 @@ mod camera;
 mod color;
 mod hittable;
 mod material;
+mod plane;
 mod ray;
 mod sphere;
+mod texture;
 mod vec3;
 mod world;
-mod plane;
-mod texture;
 
 use crate::camera::Camera;
+use crate::color::Color;
 use crate::hittable::Hittable;
-use crate::material::{Dielectric, Lambertian, Metal, DiffuseLight};
+use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
+use crate::plane::Plane;
 use crate::sphere::Sphere;
+use crate::texture::CheckeredTexture;
 use crate::vec3::Vec3;
-use rand::Rng;
 use crate::world::World;
+use rand::Rng;
 use std::sync::Arc;
 use std::time::Instant;
-use crate::color::Color;
-use crate::plane::Plane;
-use crate::texture::CheckeredTexture;
-
 
 fn main() {
     // Camera & Viewport
@@ -59,8 +58,7 @@ fn main() {
     let sphere2 = Sphere {
         center: Vec3::new(-4.0, 1.0, 0.0),
         radius: 1.0,
-        material: Box::new(DiffuseLight::new(Color::white()))
-        // material: Box::new(Lambertian::new(Vec3::new(1.0, 0.5, 0.5))),
+        material: Box::new(DiffuseLight::new(Color::white())),
     };
     let sphere3 = Sphere {
         center: Vec3::new(4.0, 1.0, 0.0),
@@ -85,17 +83,20 @@ fn main() {
     };
 
     let checkered_texture = Box::new(CheckeredTexture::new(Color::random(), Color::random(), 1.0));
-    let plane_light = Plane::xy_plane(-10.0, Box::new(Lambertian::new_from_texture(checkered_texture)));
+    let plane_light = Plane::xy_plane(
+        -10.0,
+        Box::new(Lambertian::new_from_texture(checkered_texture)),
+    );
 
     let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![
-        Box::new(plane_light) ,
+        Box::new(plane_light),
         Box::new(ground),
         Box::new(sphere1),
         Box::new(sphere2),
         Box::new(sphere3),
         Box::new(light1),
         Box::new(light2),
-        Box::new(light3)
+        Box::new(light3),
     ];
 
     let mut rng = rand::thread_rng();

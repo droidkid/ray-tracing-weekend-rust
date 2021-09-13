@@ -1,7 +1,7 @@
-use crate::vec3::{Vec3, dot};
-use crate::hittable::{Hittable, HitRecord};
-use crate::ray::Ray;
+use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
+use crate::ray::Ray;
+use crate::vec3::{dot, Vec3};
 use std::sync::Arc;
 
 pub struct Plane {
@@ -26,7 +26,7 @@ impl Hittable for Plane {
         if den.abs() < 1e-6 {
             return None;
         }
-        let num = dot((&(self.point - ray.origin())), &self.normal);
+        let num = dot(&(self.point - ray.origin()), &self.normal);
         let t = num / den;
 
         if t < t_min || t > t_max {
@@ -47,8 +47,7 @@ impl Hittable for Plane {
             t,
             u: 0.0, // TODO(): implement
             v: 0.0, // TODO(): implement!
-            material: Arc::new(&Box::new(&self.material))
+            material: Arc::new(&Box::new(&self.material)),
         })
-
     }
 }
