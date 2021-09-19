@@ -17,7 +17,7 @@ use crate::camera::Camera;
 use crate::color::Color;
 use crate::hittable::Hittable;
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
-use crate::plane::Plane;
+use crate::plane::{Cube, Plane, Triangle};
 use crate::sphere::Sphere;
 use crate::texture::CheckeredTexture;
 use crate::vec3::Vec3;
@@ -39,7 +39,7 @@ fn main() {
         Vec3::new(0.0, 1.0, 0.0),
         0.1,
         10.0,
-        20.0,
+        50.0,
         aspect_ratio,
         img_width,
         img_height,
@@ -58,28 +58,14 @@ fn main() {
     let sphere2 = Sphere {
         center: Vec3::new(-4.0, 1.0, 0.0),
         radius: 1.0,
-        material: Box::new(DiffuseLight::new(Color::white())),
-    };
-    let sphere3 = Sphere {
-        center: Vec3::new(4.0, 1.0, 0.0),
-        radius: 1.0,
-        material: Box::new(Metal::new(Vec3::new(0.7, 0.7, 0.6), 0.0)),
+        material: (Box::new(Metal::new(Vec3::new(1.0, 1.0, 1.0), 0.0))),
     };
 
-    let light1 = Sphere {
-        center: Vec3::new(4.0, 5000.0, 0.0),
-        radius: 1000.0,
-        material: Box::new(DiffuseLight::new(Color::white())),
-    };
-    let light2 = Sphere {
-        center: Vec3::new(-4000.0, 5000.0, 0.0),
-        radius: 1000.0,
-        material: Box::new(DiffuseLight::new(Color::white())),
-    };
-    let light3 = Sphere {
-        center: Vec3::new(4000.0, 5000.0, 0.0),
-        radius: 1000.0,
-        material: Box::new(DiffuseLight::new(Color::white())),
+    let cube1 = Cube {
+        center: Vec3::new(4.0, 1.0, 0.0),
+        to: Vec3::new(1.0, 1.0, 0.0),
+        scale: 0.75,
+        material: (Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.2)))),
     };
 
     let checkered_texture = Box::new(CheckeredTexture::new(Color::random(), Color::random(), 1.0));
@@ -89,50 +75,64 @@ fn main() {
     );
 
     let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![
-        Box::new(plane_light),
         Box::new(ground),
         Box::new(sphere1),
         Box::new(sphere2),
-        Box::new(sphere3),
-        Box::new(light1),
-        Box::new(light2),
-        Box::new(light3),
+        Box::new(cube1),
+        Box::new(plane_light),
     ];
 
     let mut rng = rand::thread_rng();
-    for a in -11..11 {
-        for b in -11..11 {
+    for a in -6..6 {
+        for b in -6..6 {
             let center = Vec3::new(
                 a as f64 + 0.9 * rng.gen::<f64>(),
-                0.2,
+                0.5,
                 b as f64 + 0.9 * rng.gen::<f64>(),
             );
-            if (center - Vec3::new(4.0, 0.2, 0.0)).len() < 0.9 {
+            if (center - Vec3::new(4.0, 0.2, 0.0)).len() < 3.5 {
                 continue;
             }
 
             let choose_mat = rng.gen::<f64>();
-            let sphere;
-            if choose_mat < 0.8 {
-                sphere = Sphere {
+            let choose_cube = rng.gen::<f64>();
+
+            if choose_cube < 0.5 {
+                let cube;
+
+                // TODO(chesetti): Metal and dilectric surfaces don't work in cubes.
+                // Guess the normal is being calculated wrong?
+                cube = Cube {
                     center,
-                    radius: 0.2,
-                    material: Box::new(Lambertian::new(Vec3::random(0.0, 1.0))),
+                    to: Vec3::new(1.0, 2.0, 0.0),
+                    scale: 0.3,
+                    material: (Box::new(Lambertian::new(Vec3::random(0.3, 0.7)))),
+                };
+
+                objects.push(Box::new(cube));
+            } else if choose_cube < 0.8 {
+                let sphere;
+                if choose_mat < 0.8 {
+                    sphere = Sphere {
+                        center,
+                        radius: 0.2,
+                        material: Box::new(Lambertian::new(Vec3::random(0.0, 1.0))),
+                    }
+                } else if choose_mat < 0.95 {
+                    sphere = Sphere {
+                        center,
+                        radius: 0.2,
+                        material: Box::new(Metal::new(Vec3::random(0.0, 1.0), 0.0)),
+                    }
+                } else {
+                    sphere = Sphere {
+                        center,
+                        radius: 0.2,
+                        material: Box::new(Dielectric::new(1.5)),
+                    }
                 }
-            } else if choose_mat < 0.95 {
-                sphere = Sphere {
-                    center,
-                    radius: 0.2,
-                    material: Box::new(Metal::new(Vec3::random(0.0, 1.0), 0.0)),
-                }
-            } else {
-                sphere = Sphere {
-                    center,
-                    radius: 0.2,
-                    material: Box::new(Dielectric::new(1.5)),
-                }
+                 objects.push(Box::new(sphere));
             }
-            objects.push(Box::new(sphere));
         }
     }
 
