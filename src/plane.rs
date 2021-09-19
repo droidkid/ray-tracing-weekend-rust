@@ -135,6 +135,7 @@ impl Hittable for Triangle {
         let num = dot(&(self.p1 - ray.origin()), &self.normal);
         let t = num / den;
 
+        if t < t_min || t > t_max {
             return None;
         }
 
