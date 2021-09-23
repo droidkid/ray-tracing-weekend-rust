@@ -76,11 +76,7 @@ impl Color {
     }
 
     pub fn gamma_corrected(&self) -> Color {
-        Color::new(
-            self.r().sqrt(),
-            self.g().sqrt(),
-            self.b().sqrt(),
-        )
+        Color::new(self.r().sqrt(), self.g().sqrt(), self.b().sqrt())
     }
 
     pub fn average_color<'a>(colors: impl Iterator<Item = &'a Color>) -> Color {

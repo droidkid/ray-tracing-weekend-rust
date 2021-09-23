@@ -121,8 +121,13 @@ fn ray_color(
 
         return if scatter_result.scattered_ray.is_some() {
             scatter_result.emitted
-                + ray_color(objects, &scatter_result.scattered_ray.unwrap(), depth - 1, background)
-                    .attenuate(scatter_result.attenuation)
+                + ray_color(
+                    objects,
+                    &scatter_result.scattered_ray.unwrap(),
+                    depth - 1,
+                    background,
+                )
+                .attenuate(scatter_result.attenuation)
         } else {
             scatter_result.emitted
         };

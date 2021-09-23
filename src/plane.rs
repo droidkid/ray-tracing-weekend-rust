@@ -1,10 +1,11 @@
+use crate::color::Color;
 use crate::hittable::{HitRecord, Hittable};
-use crate::material::{Material, Metal};
+use crate::material::material::Material;
+use crate::material::metal::Metal;
 use crate::ray::Ray;
 use crate::vec3::{cross, dot, Vec3};
 use std::process::exit;
 use std::sync::Arc;
-use crate::color::Color;
 
 // TODO(chesetti): THIS FILE COULD USE A CLEANUP!!!!
 // TODO(chesetti): abstract out geometry from material.
