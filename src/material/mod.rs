@@ -1,9 +1,9 @@
+pub mod checkered_texture;
+pub(crate) mod color;
 pub(crate) mod dielectric;
 pub(crate) mod diffuse_light;
 pub(crate) mod lambertian;
 pub(crate) mod material;
 pub(crate) mod metal;
-pub(crate) mod color;
-pub mod texture;
 pub mod solid_color_texture;
-pub mod checkered_texture;
+pub mod texture;

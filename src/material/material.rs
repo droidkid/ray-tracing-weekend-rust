@@ -1,10 +1,10 @@
 use crate::geometry::ray::Ray;
 use crate::geometry::vec3::{dot, Vec3};
-use crate::hittable::HitRecord;
 use crate::material::color::Color;
 use crate::material::lambertian::Lambertian;
 use crate::material::texture::Texture;
 use rand::Rng;
+use crate::hittable::hittable::HitRecord;
 
 pub struct ScatterResult {
     pub scattered_ray: Option<Ray>,

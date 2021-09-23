@@ -1,8 +1,8 @@
 use crate::geometry::ray::Ray;
 use crate::geometry::vec3::{dot, Vec3};
-use crate::hittable::HitRecord;
 use crate::material::color::Color;
 use crate::material::material::{Material, ScatterResult};
+use crate::hittable::hittable::HitRecord;
 
 pub struct Metal {
     albedo: Color,
