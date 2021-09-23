@@ -11,17 +11,16 @@ use geometry::vec3::Vec3;
 use hittable::plane::Plane;
 use hittable::sphere::Sphere;
 use material::color::Color;
+use world::camera::Camera;
 
-use crate::camera::Camera;
+use crate::hittable::cube::Cube;
+use crate::hittable::hittable::Hittable;
 use crate::material::checkered_texture::CheckeredTexture;
 use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
 use crate::material::metal::Metal;
-use crate::world::World;
-use crate::hittable::hittable::Hittable;
-use crate::hittable::cube::Cube;
+use crate::world::world::World;
 
-mod camera;
 mod geometry;
 mod material;
 mod world;
@@ -149,7 +148,7 @@ fn main() {
     let world = World::new(Arc::new(objects));
 
     let now = Instant::now();
-    world::render(
+    world::world::render(
         world,
         "render.png",
         &camera,
