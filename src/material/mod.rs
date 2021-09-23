@@ -5,3 +5,5 @@ pub(crate) mod material;
 pub(crate) mod metal;
 pub(crate) mod color;
 pub mod texture;
+pub mod solid_color_texture;
+pub mod checkered_texture;

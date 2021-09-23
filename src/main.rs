@@ -8,7 +8,6 @@ use std::time::Instant;
 use rand::Rng;
 
 use material::color::Color;
-use material::texture::CheckeredTexture;
 
 use crate::camera::Camera;
 use crate::hittable::Hittable;
@@ -19,6 +18,7 @@ use crate::plane::{Cube, Plane, Triangle};
 use crate::sphere::Sphere;
 use crate::vec3::Vec3;
 use crate::world::World;
+use crate::material::checkered_texture::CheckeredTexture;
 
 mod camera;
 mod hittable;

@@ -2,8 +2,9 @@ use crate::material::color::Color;
 use crate::hittable::HitRecord;
 use crate::material::material::{Material, ScatterResult};
 use crate::ray::Ray;
-use crate::material::texture::{SolidColorTexture, Texture};
+use crate::material::texture:: Texture;
 use crate::vec3::Vec3;
+use crate::material::solid_color_texture::SolidColorTexture;
 
 pub struct Lambertian {
     texture: Box<dyn Texture + Send + Sync>,
