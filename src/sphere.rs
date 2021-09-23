@@ -1,7 +1,7 @@
+use crate::geometry::ray::Ray;
+use crate::geometry::vec3::{dot, Vec3};
 use crate::hittable::{HitRecord, Hittable};
 use crate::material::material::Material;
-use crate::ray::Ray;
-use crate::vec3::{dot, Vec3};
 use std::sync::Arc;
 
 pub struct Sphere {

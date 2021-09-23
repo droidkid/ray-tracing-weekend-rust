@@ -1,5 +1,5 @@
-use crate::ray::Ray;
-use crate::vec3::{cross, Vec3};
+use crate::geometry::ray::Ray;
+use crate::geometry::vec3::{cross, Vec3};
 use rand::Rng;
 
 pub struct Camera {

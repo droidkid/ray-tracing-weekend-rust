@@ -1,6 +1,6 @@
+use crate::geometry::vec3::Vec3;
 use crate::material::color::Color;
 use crate::material::texture::Texture;
-use crate::vec3::Vec3;
 
 pub struct CheckeredTexture {
     even_color: Color,

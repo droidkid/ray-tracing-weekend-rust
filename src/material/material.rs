@@ -1,9 +1,9 @@
-use crate::material::color::Color;
+use crate::geometry::ray::Ray;
+use crate::geometry::vec3::{dot, Vec3};
 use crate::hittable::HitRecord;
+use crate::material::color::Color;
 use crate::material::lambertian::Lambertian;
-use crate::ray::Ray;
 use crate::material::texture::Texture;
-use crate::vec3::{dot, Vec3};
 use rand::Rng;
 
 pub struct ScatterResult {

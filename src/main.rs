@@ -7,26 +7,25 @@ use std::time::Instant;
 
 use rand::Rng;
 
+use geometry::vec3::Vec3;
 use material::color::Color;
 
 use crate::camera::Camera;
 use crate::hittable::Hittable;
+use crate::material::checkered_texture::CheckeredTexture;
 use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
 use crate::material::metal::Metal;
 use crate::plane::{Cube, Plane, Triangle};
 use crate::sphere::Sphere;
-use crate::vec3::Vec3;
 use crate::world::World;
-use crate::material::checkered_texture::CheckeredTexture;
 
 mod camera;
+mod geometry;
 mod hittable;
 mod material;
 mod plane;
-mod ray;
 mod sphere;
-mod vec3;
 mod world;
 
 fn main() {

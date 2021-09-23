@@ -1,8 +1,8 @@
-use crate::material::color::Color;
+use crate::geometry::ray::Ray;
+use crate::geometry::vec3::{dot, Vec3};
 use crate::hittable::HitRecord;
+use crate::material::color::Color;
 use crate::material::material::{Material, ScatterResult};
-use crate::ray::Ray;
-use crate::vec3::{dot, Vec3};
 use rand::Rng;
 
 pub struct Dielectric {

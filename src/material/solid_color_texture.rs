@@ -1,6 +1,6 @@
-use crate::material::texture::Texture ;
-use crate::vec3::Vec3;
+use crate::geometry::vec3::Vec3;
 use crate::material::color::Color;
+use crate::material::texture::Texture;
 
 pub struct SolidColorTexture {
     color: Color,
@@ -17,4 +17,3 @@ impl Texture for SolidColorTexture {
         self.color
     }
 }
-
