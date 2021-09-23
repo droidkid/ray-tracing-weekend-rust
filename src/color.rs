@@ -8,8 +8,17 @@ pub struct Color {
 
 impl Color {
     pub fn new(r: f64, g: f64, b: f64) -> Color {
+        if r < 0.0 || r > 1.0 {
+            panic!("Not a valid color")
+        }
+        if g < 0.0 || b > 1.0 {
+            panic!("Not a valid color")
+        }
+        if g < 0.0 || b > 1.0 {
+            panic!("Not a valid color")
+        }
+
         Color {
-            // TODO(chesetti): Do something if any component greater than 1
             rgb: Vec3::new(r, g, b),
         }
     }
@@ -27,6 +36,17 @@ impl Color {
             rgb: Vec3::random(0.0, 1.0),
         }
     }
+    pub fn r(&self) -> f64 {
+        self.rgb.x()
+    }
+
+    pub fn g(&self) -> f64 {
+        self.rgb.y()
+    }
+
+    pub fn b(&self) -> f64 {
+        self.rgb.z()
+    }
 
     pub fn new_from_vector(rgb: Vec3) -> Color {
         Color { rgb }
@@ -38,35 +58,28 @@ impl Color {
         }
     }
 
-    pub fn attenuate_factor(&self, factor: f64) -> Color {
-        // TODO(chesetti): What happens if factor > 1?
-        Color {
-            rgb: factor * self.rgb,
-        }
-    }
-    pub fn attenuate(&self, factor: Vec3) -> Color {
-        // TODO(chesetti): What happens if Vec3 > 1?
+    pub fn attenuate(&self, factor: Color) -> Color {
         Color {
             rgb: Vec3::new(
-                self.rgb.x() * factor.x(),
-                self.rgb.y() * factor.y(),
-                self.rgb.z() * factor.z(),
+                self.r() * factor.r(),
+                self.g() * factor.g(),
+                self.b() * factor.b(),
             ),
         }
     }
 
     pub fn image_pixel(&self) -> image::Rgb<u8> {
-        let r = self.rgb.x() * 256.0;
-        let g = self.rgb.y() * 256.0;
-        let b = self.rgb.z() * 256.0;
+        let r = self.r() * 256.0;
+        let g = self.g() * 256.0;
+        let b = self.b() * 256.0;
         image::Rgb([r as u8, g as u8, b as u8])
     }
 
     pub fn gamma_corrected(&self) -> Color {
         Color::new(
-            self.rgb.x().sqrt(),
-            self.rgb.y().sqrt(),
-            self.rgb.z().sqrt(),
+            self.r().sqrt(),
+            self.g().sqrt(),
+            self.b().sqrt(),
         )
     }
 

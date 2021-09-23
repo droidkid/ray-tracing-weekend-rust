@@ -23,14 +23,12 @@ pub fn render(
     filename: &str,
     camera: &Camera,
     samples_per_pixel: u32,
+    recursive_depth: u32,
     num_threads: u32,
+    background_color: Color,
 ) {
     let img_buf = ImageBuffer::new(camera.raster_width, camera.raster_height);
-    let mut pixel_rays: VecDeque<PixelRays> = VecDeque::new();
-
-    for pixel_ray in camera.get_rays(samples_per_pixel) {
-        pixel_rays.push_back(pixel_ray);
-    }
+    let pixel_rays: Vec<PixelRays> = camera.get_rays(samples_per_pixel);
 
     let img_buf_mutex = Arc::new(Mutex::new(img_buf));
     let pixel_rays_mutex = Arc::new(Mutex::new(pixel_rays));
@@ -49,9 +47,14 @@ pub fn render(
                 if pixel_rays_queue.is_empty() {
                     break;
                 }
-                pixel_rays = pixel_rays_queue.pop_front().unwrap();
+                pixel_rays = pixel_rays_queue.pop().unwrap();
             }
-            let color = get_pixel_color(&*objects_copy, &pixel_rays);
+            let color = get_pixel_color(
+                &*objects_copy,
+                &pixel_rays,
+                recursive_depth,
+                background_color,
+            );
             {
                 let mut img_buf = img_buf_thread_copy.lock().unwrap();
                 img_buf.put_pixel(pixel_rays.x, pixel_rays.y, color.image_pixel());
@@ -72,15 +75,25 @@ pub fn render(
     img_buf_mutex.lock().unwrap().save(filename).unwrap();
 }
 
-fn get_pixel_color(objects: &Vec<Box<dyn Hittable + Send + Sync>>, pixel_ray: &PixelRays) -> Color {
+fn get_pixel_color(
+    objects: &Vec<Box<dyn Hittable + Send + Sync>>,
+    pixel_ray: &PixelRays,
+    recursive_depth: u32,
+    background: Color,
+) -> Color {
     let mut sampled_colors: Vec<Color> = vec![];
     for ray in pixel_ray.rays.iter() {
-        sampled_colors.push(ray_color(objects, &ray, 100));
+        sampled_colors.push(ray_color(objects, &ray, recursive_depth, background));
     }
     Color::average_color(sampled_colors.iter()).gamma_corrected()
 }
 
-fn ray_color(objects: &Vec<Box<dyn Hittable + Send + Sync>>, ray: &Ray, depth: u32) -> Color {
+fn ray_color(
+    objects: &Vec<Box<dyn Hittable + Send + Sync>>,
+    ray: &Ray,
+    depth: u32,
+    background: Color,
+) -> Color {
     if depth <= 0 {
         return Color::white();
     }
@@ -108,13 +121,12 @@ fn ray_color(objects: &Vec<Box<dyn Hittable + Send + Sync>>, ray: &Ray, depth: u
 
         return if scatter_result.scattered_ray.is_some() {
             scatter_result.emitted
-                + ray_color(objects, &scatter_result.scattered_ray.unwrap(), depth - 1)
+                + ray_color(objects, &scatter_result.scattered_ray.unwrap(), depth - 1, background)
                     .attenuate(scatter_result.attenuation)
         } else {
             scatter_result.emitted
         };
     } else {
-        // TODO(chesetti): Is background being white always ok?
-        Color::white()
+        background
     }
 }

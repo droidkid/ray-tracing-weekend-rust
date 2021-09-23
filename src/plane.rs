@@ -4,6 +4,7 @@ use crate::ray::Ray;
 use crate::vec3::{cross, dot, Vec3};
 use std::process::exit;
 use std::sync::Arc;
+use crate::color::Color;
 
 // TODO(chesetti): THIS FILE COULD USE A CLEANUP!!!!
 // TODO(chesetti): abstract out geometry from material.
@@ -193,7 +194,7 @@ impl Hittable for Cube {
 
         fn triangle(points: &Vec<Vec3>, p1: usize, p2: usize, p3: usize) -> Triangle {
             // TODO(chesetti): decouple materials and objects.
-            let material = Box::new(Metal::new(Vec3::new(0.7, 0.7, 0.6), 0.0));
+            let material = Box::new(Metal::new(Color::new(0.7, 0.7, 0.6), 0.0));
             Triangle::new(points[p1 - 1], points[p2 - 1], points[p3 - 1], material)
         }
 

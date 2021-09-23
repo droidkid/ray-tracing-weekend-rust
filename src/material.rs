@@ -7,8 +7,7 @@ use rand::Rng;
 
 pub struct ScatterResult {
     pub scattered_ray: Option<Ray>,
-    // TODO(chesetti): Should attenuation be color?
-    pub attenuation: Vec3,
+    pub attenuation: Color,
     pub emitted: Color,
 }
 
@@ -21,7 +20,7 @@ pub struct Lambertian {
 }
 
 pub struct Metal {
-    albedo: Vec3,
+    albedo: Color,
     fuzz: f64,
 }
 
@@ -46,7 +45,7 @@ impl Lambertian {
 }
 
 impl Metal {
-    pub fn new(albedo: Vec3, fz: f64) -> Metal {
+    pub fn new(albedo: Color, fz: f64) -> Metal {
         let mut fuzz = fz;
 
         if fz > 1.0 {
@@ -85,8 +84,7 @@ impl Material for Lambertian {
             scattered_ray: Some(Ray::new(hit_record.hit_point, scatter_direction)),
             attenuation: self
                 .texture
-                .get_color(hit_record.u, hit_record.v, hit_record.hit_point)
-                .as_vector(),
+                .get_color(hit_record.u, hit_record.v, hit_record.hit_point),
             emitted: Color::black(),
         }
     }
@@ -148,7 +146,7 @@ impl Material for Dielectric {
         }
         ScatterResult {
             scattered_ray: Some(Ray::new(hit_record.hit_point, direction)),
-            attenuation: Vec3::new(1.0, 1.0, 1.0),
+            attenuation: Color::white(),
             emitted: Color::black(),
         }
     }
@@ -158,7 +156,7 @@ impl Material for DiffuseLight {
     fn scatter(&self, _ray_in: &Ray, _hit_record: &HitRecord) -> ScatterResult {
         ScatterResult {
             scattered_ray: None,
-            attenuation: Vec3::new(0.0, 0.0, 0.0),
+            attenuation: Color::black(),
             emitted: self.emit_color,
         }
     }
