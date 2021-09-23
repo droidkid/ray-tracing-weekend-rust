@@ -8,6 +8,7 @@ use std::time::Instant;
 use rand::Rng;
 
 use material::color::Color;
+use material::texture::CheckeredTexture;
 
 use crate::camera::Camera;
 use crate::hittable::Hittable;
@@ -16,7 +17,6 @@ use crate::material::lambertian::Lambertian;
 use crate::material::metal::Metal;
 use crate::plane::{Cube, Plane, Triangle};
 use crate::sphere::Sphere;
-use crate::texture::CheckeredTexture;
 use crate::vec3::Vec3;
 use crate::world::World;
 
@@ -26,7 +26,6 @@ mod material;
 mod plane;
 mod ray;
 mod sphere;
-mod texture;
 mod vec3;
 mod world;
 

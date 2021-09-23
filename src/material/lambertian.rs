@@ -2,7 +2,7 @@ use crate::material::color::Color;
 use crate::hittable::HitRecord;
 use crate::material::material::{Material, ScatterResult};
 use crate::ray::Ray;
-use crate::texture::{SolidColorTexture, Texture};
+use crate::material::texture::{SolidColorTexture, Texture};
 use crate::vec3::Vec3;
 
 pub struct Lambertian {
