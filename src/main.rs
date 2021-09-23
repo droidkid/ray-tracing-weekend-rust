@@ -65,7 +65,7 @@ fn main() {
         center: Vec3::new(4.0, 1.0, 0.0),
         to: Vec3::new(1.0, 1.0, 0.0),
         scale: 0.75,
-        material: (Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.2)))),
+        material: (Box::new(Metal::new(Vec3::new(0.5, 0.5, 0.2), 0.2))),
     };
 
     let checkered_texture = Box::new(CheckeredTexture::new(Color::random(), Color::random(), 1.0));
@@ -76,8 +76,6 @@ fn main() {
 
     let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![
         Box::new(ground),
-        Box::new(sphere1),
-        Box::new(sphere2),
         Box::new(cube1),
         Box::new(plane_light),
     ];
@@ -99,16 +97,12 @@ fn main() {
 
             if choose_cube < 0.5 {
                 let cube;
-
-                // TODO(chesetti): Metal and dilectric surfaces don't work in cubes.
-                // Guess the normal is being calculated wrong?
                 cube = Cube {
                     center,
                     to: Vec3::new(1.0, 2.0, 0.0),
                     scale: 0.3,
-                    material: (Box::new(Lambertian::new(Vec3::random(0.3, 0.7)))),
+                    material: (Box::new(Metal::new(Vec3::random(0.3, 0.7), 0.1))),
                 };
-
                 objects.push(Box::new(cube));
             } else if choose_cube < 0.8 {
                 let sphere;

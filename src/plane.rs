@@ -82,7 +82,7 @@ impl Triangle {
         let v2 = p3 - p1;
 
         // We don't care about front side or back side for now.
-        let normal = cross(&v1, &v2);
+        let normal = cross(&v1, &v2).normalize();
 
         Triangle {
             p1,
