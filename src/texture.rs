@@ -1,4 +1,4 @@
-use crate::color::Color;
+use crate::material::color::Color;
 use crate::vec3::Vec3;
 
 pub trait Texture {

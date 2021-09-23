@@ -1,4 +1,4 @@
-use crate::color::Color;
+use crate::material::color::Color;
 use crate::hittable::HitRecord;
 use crate::material::lambertian::Lambertian;
 use crate::ray::Ray;

@@ -1,4 +1,4 @@
-use crate::color::Color;
+use crate::material::color::Color;
 use crate::hittable::HitRecord;
 use crate::material::material::{Material, ScatterResult};
 use crate::ray::Ray;

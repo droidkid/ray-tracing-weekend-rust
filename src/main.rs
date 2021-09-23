@@ -2,19 +2,14 @@ extern crate image;
 #[macro_use]
 extern crate impl_ops;
 
-mod camera;
-mod color;
-mod hittable;
-mod material;
-mod plane;
-mod ray;
-mod sphere;
-mod texture;
-mod vec3;
-mod world;
+use std::sync::Arc;
+use std::time::Instant;
+
+use rand::Rng;
+
+use material::color::Color;
 
 use crate::camera::Camera;
-use crate::color::Color;
 use crate::hittable::Hittable;
 use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
@@ -24,9 +19,16 @@ use crate::sphere::Sphere;
 use crate::texture::CheckeredTexture;
 use crate::vec3::Vec3;
 use crate::world::World;
-use rand::Rng;
-use std::sync::Arc;
-use std::time::Instant;
+
+mod camera;
+mod hittable;
+mod material;
+mod plane;
+mod ray;
+mod sphere;
+mod texture;
+mod vec3;
+mod world;
 
 fn main() {
     // Camera & Viewport

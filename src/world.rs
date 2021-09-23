@@ -1,7 +1,7 @@
 use crate::camera::{Camera, PixelRays};
 use crate::hittable::{HitRecord, Hittable};
 
-use crate::color::Color;
+use crate::material::color::Color;
 use crate::ray::Ray;
 use image::ImageBuffer;
 use std::collections::VecDeque;

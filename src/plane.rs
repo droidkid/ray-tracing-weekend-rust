@@ -1,4 +1,4 @@
-use crate::color::Color;
+use crate::material::color::Color;
 use crate::hittable::{HitRecord, Hittable};
 use crate::material::material::Material;
 use crate::material::metal::Metal;
