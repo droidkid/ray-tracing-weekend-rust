@@ -3,6 +3,7 @@ use crate::geometry::vec3::{dot, Vec3};
 use crate::material::material::Material;
 use std::sync::Arc;
 use crate::hittable::hittable::{Hittable, HitRecord};
+use std::f64::consts::PI;
 
 pub struct Sphere {
     pub center: Vec3,
@@ -21,11 +22,17 @@ impl Hittable for Sphere {
 
         fn build_hit_record<'a, 'b>(
             ray: &'b Ray,
+            center: Vec3,
             t: f64,
             outward_normal: Vec3,
             material: &'a Box<dyn Material + Send + Sync>,
         ) -> HitRecord<'a> {
             let hitting_front_face = dot(ray.direction(), &outward_normal) < 0.0;
+
+            let p = ray.at(t) - center;
+            let theta = (-p.y()).acos();
+            let phi = (-p.z()).atan2(p.x()) + PI;
+
             HitRecord {
                 hit_point: ray.at(t),
                 normal: if hitting_front_face {
@@ -35,8 +42,8 @@ impl Hittable for Sphere {
                 },
                 front_face: hitting_front_face,
                 t,
-                u: 0.0, // TODO(): implement
-                v: 0.0, // TODO(): implement!
+                u: phi / (2.0 * PI),
+                v:  theta / PI,
                 material: Arc::new(material),
             }
         }
@@ -48,6 +55,7 @@ impl Hittable for Sphere {
             if t1 > t_min && t1 < t_max {
                 Some(build_hit_record(
                     ray,
+                    self.center,
                     t1,
                     (ray.at(t1) - self.center) * (1.0 / self.radius),
                     &self.material,
@@ -55,6 +63,7 @@ impl Hittable for Sphere {
             } else if t2 > t_min && t2 < t_max {
                 Some(build_hit_record(
                     ray,
+                    self.center,
                     t2,
                     (ray.at(t2) - self.center) * (1.0 / self.radius),
                     &self.material,

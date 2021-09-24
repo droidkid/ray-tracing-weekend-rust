@@ -7,3 +7,4 @@ pub(crate) mod material;
 pub(crate) mod metal;
 pub mod solid_color_texture;
 pub mod texture;
+pub mod image_texture;

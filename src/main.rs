@@ -20,6 +20,8 @@ use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
 use crate::material::metal::Metal;
 use crate::world::world::World;
+use crate::material::image_texture::ImageTexture;
+use std::path::Path;
 
 mod geometry;
 mod material;
@@ -63,11 +65,23 @@ fn main() {
         material: (Box::new(Metal::new(Color::new(1.0, 1.0, 1.0), 0.0))),
     };
 
+    let earth = Sphere {
+        center: Vec3::new(0.0, 1.0, 0.0),
+        radius: 1.0,
+        material: Box::new(Lambertian::new_from_texture(Box::new(ImageTexture::new("earthmap.jpg")))),
+    };
+
+    let mars = Sphere {
+        center: Vec3::new(4.0, 1.0, -3.5),
+        radius: 1.0,
+        material: Box::new(Lambertian::new_from_texture(Box::new(ImageTexture::new("mars.jpg")))),
+    };
+
     let cube1 = Cube {
-        center: Vec3::new(4.0, 1.0, 0.0),
-        to: Vec3::new(1.0, 1.0, 0.0),
-        scale: 0.75,
-        material: (Box::new(Metal::new(Color::new(0.5, 0.5, 0.2), 0.2))),
+        center: Vec3::new(-8.0, 4.0, 0.0),
+        to: Vec3::new(1.0, 1.0, 0.5),
+        scale: 3.0,
+        material: (Box::new(Metal::new(Color::new(1.0, 1.0, 1.0), 0.0))),
     };
 
     let checkered_texture = Box::new(CheckeredTexture::new(Color::random(), Color::random(), 1.0));
@@ -77,9 +91,10 @@ fn main() {
     );
 
     let mut objects: Vec<Box<dyn Hittable + Send + Sync>> =
-        vec![Box::new(ground), Box::new(cube1), Box::new(plane)];
+        vec![Box::new(ground), Box::new(cube1), Box::new(plane), Box::new(earth), Box::new(mars)];
 
     let mut rng = rand::thread_rng();
+    /*
     for a in -6..6 {
         for b in -6..6 {
             let center = Vec3::new(
@@ -144,6 +159,7 @@ fn main() {
             }
         }
     }
+     */
 
     let world = World::new(Arc::new(objects));
 
