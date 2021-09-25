@@ -1,37 +1,58 @@
-use crate::geometry::vec3::{Vec3, cross};
-use crate::material::material::Material;
-use crate::hittable::hittable::{Hittable, HitRecord};
 use crate::geometry::ray::Ray;
+use crate::geometry::vec3::{cross, Vec3};
+use crate::hittable::bounding_box::BoundingBox;
+use crate::hittable::hittable::{HitRecord, Hittable};
 use crate::hittable::triangle::Triangle;
-use crate::material::metal::Metal;
 use crate::material::color::Color;
+use crate::material::material::Material;
+use crate::material::metal::Metal;
 use std::sync::Arc;
 
 pub struct Cube {
-    pub center: Vec3,
-    pub scale: f64,
-    pub to: Vec3,
-    pub material: Box<dyn Material + Send + Sync>,
+    forward: Vec3,
+    right: Vec3,
+    up: Vec3,
+    scale: f64,
+    material: Box<dyn Material + Send + Sync>,
+    points: Vec<Vec3>,
 }
 
-impl Hittable for Cube {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+impl Cube {
+    pub(crate) fn new(
+        center: Vec3,
+        scale: f64,
+        to: Vec3,
+        material: Box<dyn Material + Send + Sync>,
+    ) -> Cube {
         let vup = Vec3::new(0.0, 1.0, 0.0);
-        let forward = (self.center - self.to).normalize();
+        let forward = (center - to).normalize();
         let right: Vec3 = cross(&vup, &forward).normalize();
         let up: Vec3 = cross(&forward, &right).normalize();
 
         let points = vec![
-            self.center + self.scale * (forward + right + up),
-            self.center + self.scale * (forward + right - up),
-            self.center + self.scale * (forward - right + up),
-            self.center + self.scale * (forward - right - up),
-            self.center + self.scale * ((-1.0 * forward) + right + up),
-            self.center + self.scale * ((-1.0 * forward) + right - up),
-            self.center + self.scale * ((-1.0 * forward) - right + up),
-            self.center + self.scale * ((-1.0 * forward) - right - up),
+            center + scale * (forward + right + up),
+            center + scale * (forward + right - up),
+            center + scale * (forward - right + up),
+            center + scale * (forward - right - up),
+            center + scale * ((-1.0 * forward) + right + up),
+            center + scale * ((-1.0 * forward) + right - up),
+            center + scale * ((-1.0 * forward) - right + up),
+            center + scale * ((-1.0 * forward) - right - up),
         ];
 
+        Cube {
+            forward,
+            right,
+            up,
+            scale,
+            points,
+            material,
+        }
+    }
+}
+
+impl Hittable for Cube {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         fn triangle(points: &Vec<Vec3>, p1: usize, p2: usize, p3: usize) -> Triangle {
             // TODO(chesetti): decouple materials and objects.
             // TODO(chesetti): OR implement Cube as a Bounding Volume of Triangles.
@@ -41,23 +62,23 @@ impl Hittable for Cube {
 
         let triangles = vec![
             // Face 1
-            triangle(&points, 1, 2, 3),
-            triangle(&points, 4, 2, 3),
+            triangle(&self.points, 1, 2, 3),
+            triangle(&self.points, 4, 2, 3),
             // Face 2
-            triangle(&points, 5, 6, 7),
-            triangle(&points, 8, 6, 7),
+            triangle(&self.points, 5, 6, 7),
+            triangle(&self.points, 8, 6, 7),
             // Face 3
-            triangle(&points, 6, 2, 8),
-            triangle(&points, 4, 2, 8),
+            triangle(&self.points, 6, 2, 8),
+            triangle(&self.points, 4, 2, 8),
             // Face 4
-            triangle(&points, 1, 5, 3),
-            triangle(&points, 7, 5, 3),
+            triangle(&self.points, 1, 5, 3),
+            triangle(&self.points, 7, 5, 3),
             // Face 5
-            triangle(&points, 1, 5, 2),
-            triangle(&points, 6, 5, 2),
+            triangle(&self.points, 1, 5, 2),
+            triangle(&self.points, 6, 5, 2),
             // Face 6
-            triangle(&points, 3, 7, 4),
-            triangle(&points, 8, 7, 4),
+            triangle(&self.points, 3, 7, 4),
+            triangle(&self.points, 8, 7, 4),
         ];
 
         let mut nearest_hit_record: Option<HitRecord> = None;
@@ -90,5 +111,30 @@ impl Hittable for Cube {
         }
 
         None
+    }
+
+    fn get_bounding_box(&self) -> BoundingBox {
+        let mut min_x = self.points[0].x();
+        let mut min_y = self.points[0].y();
+        let mut min_z = self.points[0].z();
+
+        let mut max_x = self.points[0].x();
+        let mut max_y = self.points[0].y();
+        let mut max_z = self.points[0].z();
+
+        for p in &self.points {
+            min_x = min_x.min(p.x());
+            min_y = min_y.min(p.y());
+            min_z = min_z.min(p.z());
+
+            max_x = max_x.max(p.x());
+            max_y = max_y.max(p.y());
+            max_z = max_z.max(p.z());
+        }
+
+        BoundingBox {
+            min_point: Vec3::new(min_x, min_y, min_z),
+            max_point: Vec3::new(max_x, max_y, max_z),
+        }
     }
 }

@@ -1,9 +1,10 @@
 use crate::geometry::ray::Ray;
 use crate::geometry::vec3::{dot, Vec3};
+use crate::hittable::bounding_box::BoundingBox;
+use crate::hittable::hittable::{HitRecord, Hittable};
 use crate::material::material::Material;
-use std::sync::Arc;
-use crate::hittable::hittable::{Hittable, HitRecord};
 use std::f64::consts::PI;
+use std::sync::Arc;
 
 pub struct Sphere {
     pub center: Vec3,
@@ -43,7 +44,7 @@ impl Hittable for Sphere {
                 front_face: hitting_front_face,
                 t,
                 u: phi / (2.0 * PI),
-                v:  theta / PI,
+                v: theta / PI,
                 material: Arc::new(material),
             }
         }
@@ -73,6 +74,13 @@ impl Hittable for Sphere {
             }
         } else {
             None
+        }
+    }
+
+    fn get_bounding_box(&self) -> BoundingBox {
+        BoundingBox {
+            min_point: self.center - Vec3::new(self.radius, self.radius, self.radius),
+            max_point: self.center + Vec3::new(self.radius, self.radius, self.radius),
         }
     }
 }

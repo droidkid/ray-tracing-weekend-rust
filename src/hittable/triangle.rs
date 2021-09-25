@@ -1,7 +1,8 @@
-use crate::geometry::vec3::{Vec3, cross, dot};
-use crate::material::material::Material;
-use crate::hittable::hittable::{Hittable, HitRecord};
 use crate::geometry::ray::Ray;
+use crate::geometry::vec3::{cross, dot, Vec3};
+use crate::hittable::bounding_box::BoundingBox;
+use crate::hittable::hittable::{HitRecord, Hittable};
+use crate::material::material::Material;
 use std::sync::Arc;
 
 pub struct Triangle {
@@ -78,6 +79,40 @@ impl Hittable for Triangle {
             })
         } else {
             None
+        }
+    }
+
+    fn get_bounding_box(&self) -> BoundingBox {
+        let points = vec![
+            self.p1 + self.normal,
+            self.p1 - self.normal,
+            self.p2 + self.normal,
+            self.p2 - self.normal,
+            self.p3 + self.normal,
+            self.p3 - self.normal,
+        ];
+
+        let mut min_x = points[0].x();
+        let mut min_y = points[0].y();
+        let mut min_z = points[0].z();
+
+        let mut max_x = points[0].x();
+        let mut max_y = points[0].y();
+        let mut max_z = points[0].z();
+
+        for p in points {
+            min_x = min_x.min(p.x());
+            min_y = min_y.min(p.y());
+            min_z = min_z.min(p.z());
+
+            max_x = max_x.max(p.x());
+            max_y = max_y.max(p.y());
+            max_z = max_z.max(p.z());
+        }
+
+        BoundingBox {
+            min_point: Vec3::new(min_x, min_y, min_z),
+            max_point: Vec3::new(max_x, max_y, max_z),
         }
     }
 }

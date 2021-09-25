@@ -1,11 +1,10 @@
-
 use crate::geometry::ray::Ray;
+use crate::hittable::hittable::{HitRecord, Hittable};
 use crate::material::color::Color;
+use crate::world::camera::{Camera, PixelRays};
 use image::ImageBuffer;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use crate::hittable::hittable::{Hittable, HitRecord};
-use crate::world::camera::{Camera, PixelRays};
 
 pub struct World {
     objects: Arc<Vec<Box<dyn Hittable + Send + Sync>>>,

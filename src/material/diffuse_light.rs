@@ -1,7 +1,7 @@
 use crate::geometry::ray::Ray;
+use crate::hittable::hittable::HitRecord;
 use crate::material::color::Color;
 use crate::material::material::{Material, ScatterResult};
-use crate::hittable::hittable::HitRecord;
 
 pub struct DiffuseLight {
     emit_color: Color,

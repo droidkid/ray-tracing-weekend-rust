@@ -1,5 +1,7 @@
+mod bounding_box;
+pub mod cube;
+pub mod hittable;
 pub mod plane;
 pub mod sphere;
-pub mod hittable;
 pub mod triangle;
-pub mod cube;
+mod bounding_box_tree;

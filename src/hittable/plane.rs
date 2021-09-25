@@ -1,10 +1,11 @@
 use crate::geometry::ray::Ray;
 use crate::geometry::vec3::{cross, dot, Vec3};
+use crate::hittable::bounding_box::BoundingBox;
+use crate::hittable::hittable::{HitRecord, Hittable};
 use crate::material::color::Color;
 use crate::material::material::Material;
 use crate::material::metal::Metal;
 use std::sync::Arc;
-use crate::hittable::hittable::{Hittable, HitRecord};
 
 pub struct Plane {
     point: Vec3,
@@ -68,6 +69,8 @@ impl Hittable for Plane {
             material: Arc::new(&Box::new(&self.material)),
         })
     }
+
+    fn get_bounding_box(&self) -> BoundingBox {
+        todo!()
+    }
 }
-
-
