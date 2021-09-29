@@ -1,6 +1,6 @@
 use crate::geometry::ray::Ray;
 use crate::geometry::vec3::{cross, Vec3};
-use crate::hittable::bounding_box::BoundingBox;
+use crate::hittable::bounding_box::AabbBoundingBox;
 use crate::hittable::hittable::{HitRecord, Hittable};
 use crate::hittable::triangle::Triangle;
 use crate::material::color::Color;
@@ -113,7 +113,7 @@ impl Hittable for Cube {
         None
     }
 
-    fn get_bounding_box(&self) -> BoundingBox {
+    fn get_bounding_box(&self) -> AabbBoundingBox {
         let mut min_x = self.points[0].x();
         let mut min_y = self.points[0].y();
         let mut min_z = self.points[0].z();
@@ -132,7 +132,7 @@ impl Hittable for Cube {
             max_z = max_z.max(p.z());
         }
 
-        BoundingBox {
+        AabbBoundingBox {
             min_point: Vec3::new(min_x, min_y, min_z),
             max_point: Vec3::new(max_x, max_y, max_z),
         }

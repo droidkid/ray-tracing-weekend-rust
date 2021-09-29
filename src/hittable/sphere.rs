@@ -1,6 +1,6 @@
 use crate::geometry::ray::Ray;
 use crate::geometry::vec3::{dot, Vec3};
-use crate::hittable::bounding_box::BoundingBox;
+use crate::hittable::bounding_box::AabbBoundingBox;
 use crate::hittable::hittable::{HitRecord, Hittable};
 use crate::material::material::Material;
 use std::f64::consts::PI;
@@ -77,8 +77,8 @@ impl Hittable for Sphere {
         }
     }
 
-    fn get_bounding_box(&self) -> BoundingBox {
-        BoundingBox {
+    fn get_bounding_box(&self) -> AabbBoundingBox {
+        AabbBoundingBox {
             min_point: self.center - Vec3::new(self.radius, self.radius, self.radius),
             max_point: self.center + Vec3::new(self.radius, self.radius, self.radius),
         }

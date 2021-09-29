@@ -13,6 +13,7 @@ use hittable::sphere::Sphere;
 use material::color::Color;
 use world::camera::Camera;
 
+use crate::hittable::bounding_box_tree::BoundingBoxTree;
 use crate::hittable::cube::Cube;
 use crate::hittable::hittable::Hittable;
 use crate::material::checkered_texture::CheckeredTexture;
@@ -31,7 +32,7 @@ mod world;
 fn main() {
     // Camera & Viewport
     let aspect_ratio = 3.0 / 2.0;
-    let img_width = 1200;
+    let img_width = 600;
     let img_height = (img_width as f64 / aspect_ratio) as u32;
     let samples_per_pixel: u32 = 100;
     let recursive_depth: u32 = 100;
@@ -134,7 +135,7 @@ fn main() {
                         Box::new(Dielectric::new(1.5)),
                     )
                 }
-                objects.push(Box::new(cube));
+                 objects.push(Box::new(cube));
             } else if choose_cube < 0.8 {
                 let sphere;
                 if choose_mat < 0.8 {
@@ -161,7 +162,7 @@ fn main() {
         }
     }
 
-    let world = World::new(Arc::new(objects));
+    let world = World::new(objects);
 
     let now = Instant::now();
     world::world::render(

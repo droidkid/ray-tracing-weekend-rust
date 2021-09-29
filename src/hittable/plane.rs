@@ -1,6 +1,6 @@
 use crate::geometry::ray::Ray;
 use crate::geometry::vec3::{cross, dot, Vec3};
-use crate::hittable::bounding_box::BoundingBox;
+use crate::hittable::bounding_box::AabbBoundingBox;
 use crate::hittable::hittable::{HitRecord, Hittable};
 use crate::material::color::Color;
 use crate::material::material::Material;
@@ -70,7 +70,7 @@ impl Hittable for Plane {
         })
     }
 
-    fn get_bounding_box(&self) -> BoundingBox {
+    fn get_bounding_box(&self) -> AabbBoundingBox {
         todo!()
     }
 }

@@ -84,6 +84,10 @@ impl Vec3 {
             && self.y().abs() < 0.0000000001
             && self.z().abs() < 0.0000000001
     }
+
+    pub fn as_slice(&self) -> Vec<f64> {
+        vec![self.x(), self.y(), self.z()]
+    }
 }
 
 impl fmt::Display for Vec3 {

@@ -1,6 +1,6 @@
 use crate::geometry::ray::Ray;
 use crate::geometry::vec3::{cross, dot, Vec3};
-use crate::hittable::bounding_box::BoundingBox;
+use crate::hittable::bounding_box::AabbBoundingBox;
 use crate::hittable::hittable::{HitRecord, Hittable};
 use crate::material::material::Material;
 use std::sync::Arc;
@@ -82,7 +82,7 @@ impl Hittable for Triangle {
         }
     }
 
-    fn get_bounding_box(&self) -> BoundingBox {
+    fn get_bounding_box(&self) -> AabbBoundingBox {
         let points = vec![
             self.p1 + self.normal,
             self.p1 - self.normal,
@@ -110,7 +110,7 @@ impl Hittable for Triangle {
             max_z = max_z.max(p.z());
         }
 
-        BoundingBox {
+        AabbBoundingBox {
             min_point: Vec3::new(min_x, min_y, min_z),
             max_point: Vec3::new(max_x, max_y, max_z),
         }
