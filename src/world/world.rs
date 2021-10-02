@@ -1,18 +1,27 @@
 use crate::geometry::ray::Ray;
+use crate::hittable::bounding_box_tree::BoundingBoxTree;
 use crate::hittable::hittable::{HitRecord, Hittable};
 use crate::material::color::Color;
 use crate::world::camera::{Camera, PixelRays};
 use image::ImageBuffer;
+use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
 pub struct World {
-    objects: Arc<Vec<Box<dyn Hittable + Send + Sync>>>,
+    bounding_box_tree: BoundingBoxTree,
 }
 
 impl World {
-    pub fn new(objects: Arc<Vec<Box<dyn Hittable + Send + Sync>>>) -> World {
-        World { objects }
+    pub fn new(objects: Vec<Box<dyn Hittable + Send + Sync>>) -> World {
+        let mut nobjects = vec![];
+        for object in objects {
+            nobjects.push(Arc::new(object));
+        }
+
+        World {
+            bounding_box_tree: BoundingBoxTree::new(&*nobjects, 5),
+        }
     }
 }
 
@@ -30,7 +39,7 @@ pub fn render(
 
     let img_buf_mutex = Arc::new(Mutex::new(img_buf));
     let pixel_rays_mutex = Arc::new(Mutex::new(pixel_rays));
-    let objects_arc = Arc::clone(&world.objects);
+    let objects_arc = Arc::new(world.bounding_box_tree);
 
     let mut handlers = vec![];
     for _ in 0..num_threads {
@@ -74,7 +83,7 @@ pub fn render(
 }
 
 fn get_pixel_color(
-    objects: &Vec<Box<dyn Hittable + Send + Sync>>,
+    objects: &BoundingBoxTree,
     pixel_ray: &PixelRays,
     recursive_depth: u32,
     background: Color,
@@ -86,30 +95,11 @@ fn get_pixel_color(
     Color::average_color(sampled_colors.iter()).gamma_corrected()
 }
 
-fn ray_color(
-    objects: &Vec<Box<dyn Hittable + Send + Sync>>,
-    ray: &Ray,
-    depth: u32,
-    background: Color,
-) -> Color {
+fn ray_color(objects: &BoundingBoxTree, ray: &Ray, depth: u32, background: Color) -> Color {
     if depth <= 0 {
-        return Color::white();
+        return background;
     }
-    let mut nearest_hit_record: Option<HitRecord> = None;
-    let mut nearest_t = 0.0;
-
-    for object in objects.iter() {
-        let maybe_hit_record = object.hit(&ray, 0.0001, f64::MAX);
-        if maybe_hit_record.is_none() {
-            continue;
-        }
-
-        let hit_record = maybe_hit_record.unwrap();
-        if nearest_hit_record.is_none() || hit_record.t < nearest_t {
-            nearest_t = hit_record.t;
-            nearest_hit_record = Some(hit_record);
-        }
-    }
+    let mut nearest_hit_record: Option<HitRecord> = objects.hit(ray, 0.0, f64::MAX);
 
     if nearest_hit_record.is_some() {
         let nearest_hit_record = nearest_hit_record.unwrap();

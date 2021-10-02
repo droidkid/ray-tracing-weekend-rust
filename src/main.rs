@@ -23,6 +23,8 @@ use crate::material::lambertian::Lambertian;
 use crate::material::metal::Metal;
 use crate::world::world::World;
 use std::path::Path;
+use std::fmt::Debug;
+use std::sync::atomic::Ordering;
 
 mod geometry;
 mod hittable;
@@ -32,7 +34,7 @@ mod world;
 fn main() {
     // Camera & Viewport
     let aspect_ratio = 3.0 / 2.0;
-    let img_width = 600;
+    let img_width = 300;
     let img_height = (img_width as f64 / aspect_ratio) as u32;
     let samples_per_pixel: u32 = 100;
     let recursive_depth: u32 = 100;
@@ -97,8 +99,8 @@ fn main() {
     ];
 
     let mut rng = rand::thread_rng();
-    for a in -6..6 {
-        for b in -6..6 {
+    for a in -12..12 {
+        for b in -12..12 {
             let center = Vec3::new(
                 a as f64 + 0.9 * rng.gen::<f64>(),
                 0.5,
@@ -135,7 +137,7 @@ fn main() {
                         Box::new(Dielectric::new(1.5)),
                     )
                 }
-                 objects.push(Box::new(cube));
+                objects.push(Box::new(cube));
             } else if choose_cube < 0.8 {
                 let sphere;
                 if choose_mat < 0.8 {
@@ -157,11 +159,12 @@ fn main() {
                         material: Box::new(Dielectric::new(1.5)),
                     }
                 }
-                objects.push(Box::new(sphere));
+                 objects.push(Box::new(sphere));
             }
         }
     }
 
+    let num_objects = objects.len();
     let world = World::new(objects);
 
     let now = Instant::now();
@@ -175,5 +178,7 @@ fn main() {
         Color::white(),
     );
     let elapsed = now.elapsed();
-    println!("Wrote render.png in {} seconds", elapsed.as_secs())
+    println!("Wrote render.png in {} seconds", elapsed.as_secs());
+    println!("Num Objects: {}", num_objects);
+    println!("Intersection Count: {}", hittable::bounding_box_tree::COUNTER.fetch_add(0, Ordering::Relaxed));
 }
