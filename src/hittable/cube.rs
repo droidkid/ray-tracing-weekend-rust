@@ -12,18 +12,18 @@ pub struct Cube {
     forward: Vec3,
     right: Vec3,
     up: Vec3,
-    scale: f64,
     material: Box<dyn Material + Send + Sync>,
     points: Vec<Vec3>,
 }
 
 impl Cube {
-    pub(crate) fn new(
+    pub fn new(
         center: Vec3,
         scale: f64,
         to: Vec3,
         material: Box<dyn Material + Send + Sync>,
     ) -> Cube {
+        // TODO(chesetti): Add rotation around (center - to)
         let vup = Vec3::new(0.0, 1.0, 0.0);
         let forward = (center - to).normalize();
         let right: Vec3 = cross(&vup, &forward).normalize();
@@ -44,7 +44,45 @@ impl Cube {
             forward,
             right,
             up,
-            scale,
+            points,
+            material,
+        }
+    }
+
+    pub fn newCuboid(
+        center: Vec3,
+        to: Vec3,
+        width: f64,
+        height: f64,
+        depth: f64,
+        material: Box<dyn Material + Send + Sync>,
+    ) -> Cube {
+        // TODO(chesetti): Add rotation around (center - to)
+        let vup = Vec3::new(0.0, 1.0, 0.0);
+        let forward = (center - to).normalize();
+        let right: Vec3 = cross(&vup, &forward).normalize();
+        let up: Vec3 = cross(&forward, &right).normalize();
+
+        let forward = forward * (depth * 0.5);
+        let right = right * (width * 0.5);
+        let up = up * (height * 0.5);
+
+
+        let points = vec![
+            center +  (forward + right + up),
+            center +  (forward + right - up),
+            center +  (forward - right + up),
+            center +  (forward - right - up),
+            center +  ((-1.0 * forward) + right + up),
+            center +  ((-1.0 * forward) + right - up),
+            center +  ((-1.0 * forward) - right + up),
+            center +  ((-1.0 * forward) - right - up),
+        ];
+
+        Cube {
+            forward,
+            right,
+            up,
             points,
             material,
         }

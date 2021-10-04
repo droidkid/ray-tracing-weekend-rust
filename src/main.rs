@@ -8,7 +8,7 @@ use std::time::Instant;
 use rand::Rng;
 
 use geometry::vec3::Vec3;
-use hittable::plane::Plane;
+use hittable::quad::Quad;
 use hittable::sphere::Sphere;
 use material::color::Color;
 use world::camera::Camera;
@@ -31,7 +31,7 @@ mod hittable;
 mod material;
 mod world;
 
-fn main() {
+fn cubes_and_spheres_scene()  {
     // Camera & Viewport
     let aspect_ratio = 3.0 / 2.0;
     let img_width = 300;
@@ -57,17 +57,6 @@ fn main() {
         radius: 1000.0,
         material: (Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)))),
     };
-    let sphere1 = Sphere {
-        material: Box::new(Dielectric::new(1.5)),
-        center: Vec3::new(0.0, 1.0, 0.0),
-        radius: 1.0,
-    };
-    let sphere2 = Sphere {
-        center: Vec3::new(-4.0, 1.0, 0.0),
-        radius: 1.0,
-        material: (Box::new(Metal::new(Color::new(1.0, 1.0, 1.0), 0.0))),
-    };
-
     let earth = Sphere {
         center: Vec3::new(0.0, 1.0, 0.0),
         radius: 1.0,
@@ -159,11 +148,10 @@ fn main() {
                         material: Box::new(Dielectric::new(1.5)),
                     }
                 }
-                 objects.push(Box::new(sphere));
+                objects.push(Box::new(sphere));
             }
         }
     }
-
     let num_objects = objects.len();
     let world = World::new(objects);
 
@@ -181,4 +169,121 @@ fn main() {
     println!("Wrote render.png in {} seconds", elapsed.as_secs());
     println!("Num Objects: {}", num_objects);
     println!("Intersection Count: {}", hittable::bounding_box_tree::COUNTER.fetch_add(0, Ordering::Relaxed));
+}
+
+fn cornell_box_scene()  {
+
+    let right_wall = Quad::new_lambertian(
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 555.0, 555.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        Vec3::new(0.0, 0.0, 0.0),
+        Color::new(0.65, 0.05, 0.05)
+    );
+
+    let left_wall = Quad::new_lambertian(
+        Vec3::new(555.0, 555.0, 0.0),
+        Vec3::new(555.0, 555.0, 555.0),
+        Vec3::new(555.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Color::new(0.12, 0.45, 0.15)
+    );
+
+    let back_wall = Quad::new_lambertian(
+        Vec3::new(0.0, 555.0, 555.0),
+        Vec3::new(555.0, 555.0, 555.0),
+        Vec3::new(555.0, 0.0, 555.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        Color::white()
+    );
+
+    let light = Quad::new_diffuse_light(
+        Vec3::new(113.0, 554.0, 127.0),
+        Vec3::new(113.0, 554.0, 432.0),
+        Vec3::new(443.0, 554.0, 432.0),
+        Vec3::new(443.0, 554.0, 127.0),
+        Color::new(1.0, 1.0, 1.0)
+    );
+
+    let top_wall = Quad::new_lambertian(
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 555.0, 555.0),
+        Vec3::new(555.0, 555.0, 555.0),
+        Vec3::new(555.0, 555.0, 0.0),
+        Color::white()
+    );
+
+    let bottom_wall = Quad::new_lambertian(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Color::white()
+    );
+    
+    let cube1 = Cube::newCuboid(Vec3::new(138.0, 75.0, 130.0),
+                                Vec3::new(200.0, 75.0, 300.0),
+                          100.0,
+                          150.0,
+                          100.0,
+                          Box::new(Lambertian::new_from_color(Color::white())));
+
+    let cube2 = Cube::newCuboid(Vec3::new(400.0, 150.0, 330.0),
+                                Vec3::new(100.0, 150.0, 300.0),
+                                100.0,
+                                300.0,
+                                100.0,
+                                Box::new(Lambertian::new_from_color(Color::white())));
+
+    let objects : Vec<Box<dyn Hittable + Sync + Send>>= vec![
+      Box::new(right_wall),
+      Box::new(left_wall),
+      Box::new(back_wall),
+      Box::new(top_wall),
+      Box::new(bottom_wall),
+      Box::new(light),
+      Box::new(cube1),
+      Box::new(cube2),
+    ];
+
+    // Camera & Viewport
+    let aspect_ratio = 1.0;
+    let img_width = 600;
+    let img_height = (img_width as f64 / aspect_ratio) as u32;
+    let samples_per_pixel: u32 = 200;
+    let recursive_depth: u32 = 100;
+    let num_threads = 16;
+
+    let camera = Camera::camera(
+        Vec3::new(278.0, 278.0, -800.0),
+        Vec3::new(278.0, 278.0, 0.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        0.1,
+        800.0,
+        40.0,
+        aspect_ratio,
+        img_width,
+        img_height,
+    );
+
+
+    let world = World::new(objects);
+
+    let now = Instant::now();
+    world::world::render(
+        world,
+        "render.png",
+        &camera,
+        samples_per_pixel,
+        recursive_depth,
+        num_threads,
+        Color::black(),
+    );
+    let elapsed = now.elapsed();
+    println!("Wrote render.png in {} seconds", elapsed.as_secs());
+    println!("Intersection Count: {}", hittable::bounding_box_tree::COUNTER.fetch_add(0, Ordering::Relaxed));
+}
+
+fn main() {
+    cornell_box_scene();
 }
