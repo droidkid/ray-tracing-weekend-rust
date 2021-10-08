@@ -147,7 +147,7 @@ fn cubes_and_spheres_scene() {
     let now = Instant::now();
     world::world::render(
         world,
-        "render.png",
+        "cubes_spheres_render.png",
         &camera,
         samples_per_pixel,
         recursive_depth,
@@ -269,7 +269,7 @@ fn cornell_box_scene() {
     let now = Instant::now();
     world::world::render(
         world,
-        "render.png",
+        "cornell_scene.png",
         &camera,
         samples_per_pixel,
         recursive_depth,
@@ -285,5 +285,5 @@ fn cornell_box_scene() {
 }
 
 fn main() {
-    cubes_and_spheres_scene();
+    cornell_box_scene();
 }
