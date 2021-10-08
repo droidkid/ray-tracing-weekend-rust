@@ -9,8 +9,7 @@ use std::sync::Arc;
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
-    // TODO(chesetti): Make material reference? You might want to share materials?
-    pub material: Box<dyn Material + Send + Sync>,
+    pub material: Arc<Box<dyn Material + Send + Sync>>,
 }
 
 impl Hittable for Sphere {

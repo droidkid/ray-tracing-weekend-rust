@@ -16,12 +16,6 @@ impl Lambertian {
         }
     }
 
-    pub fn new(albedo: Vec3) -> Lambertian {
-        Lambertian {
-            texture: Box::new(SolidColorTexture::new(Color::new_from_vector(albedo))),
-        }
-    }
-
     pub fn new_from_texture(texture: Box<dyn Texture + Send + Sync>) -> Lambertian {
         Lambertian { texture }
     }

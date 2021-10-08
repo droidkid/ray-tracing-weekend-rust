@@ -2,13 +2,13 @@ use crate::geometry::ray::Ray;
 use crate::geometry::vec3::{cross, dot, Vec3};
 use crate::hittable::bounding_box::AabbBoundingBox;
 use crate::hittable::hittable::{HitRecord, Hittable};
+use crate::hittable::triangle::Triangle;
 use crate::material::color::Color;
+use crate::material::diffuse_light::DiffuseLight;
+use crate::material::lambertian::Lambertian;
 use crate::material::material::Material;
 use crate::material::metal::Metal;
 use std::sync::Arc;
-use crate::hittable::triangle::Triangle;
-use crate::material::lambertian::Lambertian;
-use crate::material::diffuse_light::DiffuseLight;
 
 pub struct Quad {
     triangle1: Triangle,
@@ -18,16 +18,18 @@ pub struct Quad {
 impl Quad {
     pub fn new_lambertian(p1: Vec3, p2: Vec3, p3: Vec3, p4: Vec3, color: Color) -> Quad {
         // TODO(chesetti): Rotate points in clockwise manner around p1.
+        let material: Arc<Box<dyn Material + Send + Sync>> = Arc::new(Box::new(Lambertian::new_from_color(color)));
         Quad {
-            triangle1: Triangle::new(p1, p2, p3, Box::new(Lambertian::new_from_color(color))),
-            triangle2: Triangle::new(p1, p3, p4, Box::new(Lambertian::new_from_color(color)))
+            triangle1: Triangle::new(p1, p2, p3, Arc::clone(&material)),
+            triangle2: Triangle::new(p1, p3, p4, Arc::clone(&material)),
         }
     }
 
     pub fn new_diffuse_light(p1: Vec3, p2: Vec3, p3: Vec3, p4: Vec3, color: Color) -> Quad {
+        let material: Arc<Box<dyn Material + Send + Sync>> = Arc::new(Box::new(DiffuseLight::new(color)));
         Quad {
-            triangle1: Triangle::new(p1, p2, p3, Box::new(DiffuseLight::new(color))),
-            triangle2: Triangle::new(p1, p3, p4, Box::new(DiffuseLight::new(color)))
+            triangle1: Triangle::new(p1, p2, p3, Arc::clone(&material)),
+            triangle2: Triangle::new(p1, p3, p4,  Arc::clone(&material)),
         }
     }
 }
@@ -53,8 +55,7 @@ impl Hittable for Quad {
             hit1
         } else {
             hit2
-        }
-
+        };
     }
 
     fn get_bounding_box(&self) -> AabbBoundingBox {
@@ -71,7 +72,7 @@ impl Hittable for Quad {
                 bb1.max_point.x().max(bb2.max_point.x()),
                 bb1.max_point.y().max(bb2.max_point.y()),
                 bb1.max_point.z().max(bb2.max_point.z()),
-            )
+            ),
         }
     }
 }

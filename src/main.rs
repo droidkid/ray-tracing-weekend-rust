@@ -20,10 +20,11 @@ use crate::material::checkered_texture::CheckeredTexture;
 use crate::material::dielectric::Dielectric;
 use crate::material::image_texture::ImageTexture;
 use crate::material::lambertian::Lambertian;
+use crate::material::material::Material;
 use crate::material::metal::Metal;
 use crate::world::world::World;
-use std::path::Path;
 use std::fmt::Debug;
+use std::path::Path;
 use std::sync::atomic::Ordering;
 
 mod geometry;
@@ -31,7 +32,7 @@ mod hittable;
 mod material;
 mod world;
 
-fn cubes_and_spheres_scene()  {
+fn cubes_and_spheres_scene() {
     // Camera & Viewport
     let aspect_ratio = 3.0 / 2.0;
     let img_width = 300;
@@ -52,32 +53,40 @@ fn cubes_and_spheres_scene()  {
         img_height,
     );
 
+    let grey: Arc<Box<dyn Material + Send + Sync>> =
+        Arc::new(Box::new(Lambertian::new_from_color(Color::new(0.5, 0.5, 0.5))));
+    let white: Arc<Box<dyn Material + Send + Sync>> =
+        Arc::new(Box::new(Metal::new(Color::white(), 0.1)));
+    let earth_texture: Arc<Box<dyn Material + Send + Sync>> = Arc::new(Box::new(
+        Lambertian::new_from_texture(Box::new(ImageTexture::new("earthmap.jpg"))),
+    ));
+    let mars_texture: Arc<Box<dyn Material + Send + Sync>> = Arc::new(Box::new(
+        Lambertian::new_from_texture(Box::new(ImageTexture::new("mars.jpg"))),
+    ));
+
     let ground = Sphere {
         center: Vec3::new(0.0, -1000.0, 0.0),
         radius: 1000.0,
-        material: (Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)))),
+        material: Arc::clone(&grey),
     };
+
     let earth = Sphere {
         center: Vec3::new(0.0, 1.0, 0.0),
         radius: 1.0,
-        material: Box::new(Lambertian::new_from_texture(Box::new(ImageTexture::new(
-            "earthmap.jpg",
-        )))),
+        material: Arc::clone(&earth_texture),
     };
 
     let mars = Sphere {
         center: Vec3::new(4.0, 1.0, -3.5),
         radius: 1.0,
-        material: Box::new(Lambertian::new_from_texture(Box::new(ImageTexture::new(
-            "mars.jpg",
-        )))),
+        material: Arc::clone(&mars_texture),
     };
 
     let cube1 = Cube::new(
         Vec3::new(-8.0, 4.0, 0.0),
         3.0,
         Vec3::new(1.0, 1.0, 0.5),
-        (Box::new(Metal::new(Color::new(1.0, 1.0, 1.0), 0.0))),
+        Arc::clone(&white)
     );
 
     let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![
@@ -100,58 +109,38 @@ fn cubes_and_spheres_scene()  {
             }
 
             let choose_mat = rng.gen::<f64>();
-            let choose_cube = rng.gen::<f64>();
-
-            if choose_cube < 0.5 {
-                let cube;
-                if choose_mat < 0.8 {
-                    cube = Cube::new(
-                        center,
-                        0.3,
-                        Vec3::new(1.0, 0.5, 0.0),
-                        (Box::new(Metal::new(Color::random(), 0.1))),
-                    );
-                } else if choose_mat < 0.95 {
-                    cube = Cube::new(
-                        center,
-                        0.3,
-                        Vec3::new(1.0, 0.5, 0.0),
-                        Box::new(Metal::new(Color::random(), 0.0)),
-                    )
-                } else {
-                    cube = Cube::new(
-                        center,
-                        0.3,
-                        Vec3::new(1.0, 0.5, 0.0),
-                        Box::new(Dielectric::new(1.5)),
-                    )
-                }
-                objects.push(Box::new(cube));
-            } else if choose_cube < 0.8 {
-                let sphere;
-                if choose_mat < 0.8 {
-                    sphere = Sphere {
-                        center,
-                        radius: 0.2,
-                        material: Box::new(Lambertian::new(Vec3::random(0.0, 1.0))),
-                    }
-                } else if choose_mat < 0.95 {
-                    sphere = Sphere {
-                        center,
-                        radius: 0.2,
-                        material: Box::new(Metal::new(Color::random(), 0.0)),
-                    }
-                } else {
-                    sphere = Sphere {
-                        center,
-                        radius: 0.2,
-                        material: Box::new(Dielectric::new(1.5)),
-                    }
-                }
-                objects.push(Box::new(sphere));
+            let material: Arc<Box<dyn Material + Send + Sync>>;
+            if choose_mat < 0.8 {
+                material = Arc::new((Box::new(Metal::new(Color::random(), 0.1))));
+            } else if choose_mat < 0.95 {
+                material = Arc::new(Box::new(Lambertian::new_from_color(Color::random())));
+            } else {
+                material = Arc::new(Box::new(Dielectric::new(1.5)));
             }
+
+
+            let choose_cube = rng.gen::<f64>();
+            let object:  Box<dyn Hittable + Send + Sync>;
+
+            if choose_cube < 0.1 {
+                object = Box::new(Cube::new(
+                    center,
+                    0.3,
+                    Vec3::new(1.0, 0.5, 0.0),
+                    Arc::clone(&material)
+                ));
+            } else {
+                object = Box::new(Sphere {
+                    center,
+                    radius: 0.2,
+                    material: Arc::clone(&material)
+                });
+            }
+
+            objects.push(object);
         }
     }
+
     let num_objects = objects.len();
     let world = World::new(objects);
 
@@ -168,17 +157,22 @@ fn cubes_and_spheres_scene()  {
     let elapsed = now.elapsed();
     println!("Wrote render.png in {} seconds", elapsed.as_secs());
     println!("Num Objects: {}", num_objects);
-    println!("Intersection Count: {}", hittable::bounding_box_tree::COUNTER.fetch_add(0, Ordering::Relaxed));
+    println!(
+        "Intersection Count: {}",
+        hittable::bounding_box_tree::COUNTER.fetch_add(0, Ordering::Relaxed)
+    );
 }
 
-fn cornell_box_scene()  {
+fn cornell_box_scene() {
+    let white: Arc<Box<dyn Material + Send + Sync>> =
+        Arc::new(Box::new(Lambertian::new_from_color(Color::white())));
 
     let right_wall = Quad::new_lambertian(
         Vec3::new(0.0, 555.0, 0.0),
         Vec3::new(0.0, 555.0, 555.0),
         Vec3::new(0.0, 0.0, 555.0),
         Vec3::new(0.0, 0.0, 0.0),
-        Color::new(0.65, 0.05, 0.05)
+        Color::new(0.65, 0.05, 0.05),
     );
 
     let left_wall = Quad::new_lambertian(
@@ -186,7 +180,7 @@ fn cornell_box_scene()  {
         Vec3::new(555.0, 555.0, 555.0),
         Vec3::new(555.0, 0.0, 555.0),
         Vec3::new(555.0, 0.0, 0.0),
-        Color::new(0.12, 0.45, 0.15)
+        Color::new(0.12, 0.45, 0.15),
     );
 
     let back_wall = Quad::new_lambertian(
@@ -194,7 +188,7 @@ fn cornell_box_scene()  {
         Vec3::new(555.0, 555.0, 555.0),
         Vec3::new(555.0, 0.0, 555.0),
         Vec3::new(0.0, 0.0, 555.0),
-        Color::white()
+        Color::white(),
     );
 
     let light = Quad::new_diffuse_light(
@@ -202,7 +196,7 @@ fn cornell_box_scene()  {
         Vec3::new(113.0, 554.0, 432.0),
         Vec3::new(443.0, 554.0, 432.0),
         Vec3::new(443.0, 554.0, 127.0),
-        Color::new(1.0, 1.0, 1.0)
+        Color::new(1.0, 1.0, 1.0),
     );
 
     let top_wall = Quad::new_lambertian(
@@ -210,7 +204,7 @@ fn cornell_box_scene()  {
         Vec3::new(0.0, 555.0, 555.0),
         Vec3::new(555.0, 555.0, 555.0),
         Vec3::new(555.0, 555.0, 0.0),
-        Color::white()
+        Color::white(),
     );
 
     let bottom_wall = Quad::new_lambertian(
@@ -218,32 +212,36 @@ fn cornell_box_scene()  {
         Vec3::new(0.0, 0.0, 555.0),
         Vec3::new(555.0, 0.0, 555.0),
         Vec3::new(555.0, 0.0, 0.0),
-        Color::white()
+        Color::white(),
     );
-    
-    let cube1 = Cube::newCuboid(Vec3::new(138.0, 75.0, 130.0),
-                                Vec3::new(200.0, 75.0, 300.0),
-                          100.0,
-                          150.0,
-                          100.0,
-                          Box::new(Lambertian::new_from_color(Color::white())));
 
-    let cube2 = Cube::newCuboid(Vec3::new(400.0, 150.0, 330.0),
-                                Vec3::new(100.0, 150.0, 300.0),
-                                100.0,
-                                300.0,
-                                100.0,
-                                Box::new(Lambertian::new_from_color(Color::white())));
+    let cube1 = Cube::newCuboid(
+        Vec3::new(138.0, 75.0, 130.0),
+        Vec3::new(200.0, 75.0, 300.0),
+        100.0,
+        150.0,
+        100.0,
+        Arc::clone(&white)
+    );
 
-    let objects : Vec<Box<dyn Hittable + Sync + Send>>= vec![
-      Box::new(right_wall),
-      Box::new(left_wall),
-      Box::new(back_wall),
-      Box::new(top_wall),
-      Box::new(bottom_wall),
-      Box::new(light),
-      Box::new(cube1),
-      Box::new(cube2),
+    let cube2 = Cube::newCuboid(
+        Vec3::new(400.0, 150.0, 330.0),
+        Vec3::new(100.0, 150.0, 300.0),
+        100.0,
+        300.0,
+        100.0,
+        Arc::clone(&white)
+    );
+
+    let objects: Vec<Box<dyn Hittable + Sync + Send>> = vec![
+        Box::new(right_wall),
+        Box::new(left_wall),
+        Box::new(back_wall),
+        Box::new(top_wall),
+        Box::new(bottom_wall),
+        Box::new(light),
+        Box::new(cube1),
+        Box::new(cube2),
     ];
 
     // Camera & Viewport
@@ -266,7 +264,6 @@ fn cornell_box_scene()  {
         img_height,
     );
 
-
     let world = World::new(objects);
 
     let now = Instant::now();
@@ -281,9 +278,12 @@ fn cornell_box_scene()  {
     );
     let elapsed = now.elapsed();
     println!("Wrote render.png in {} seconds", elapsed.as_secs());
-    println!("Intersection Count: {}", hittable::bounding_box_tree::COUNTER.fetch_add(0, Ordering::Relaxed));
+    println!(
+        "Intersection Count: {}",
+        hittable::bounding_box_tree::COUNTER.fetch_add(0, Ordering::Relaxed)
+    );
 }
 
 fn main() {
-    cornell_box_scene();
+    cubes_and_spheres_scene();
 }

@@ -10,7 +10,7 @@ pub struct Triangle {
     p2: Vec3,
     p3: Vec3,
     normal: Vec3,
-    material: Box<dyn Material + Send + Sync>,
+    material: Arc<Box<dyn Material + Send + Sync>>,
 }
 
 impl Triangle {
@@ -18,7 +18,7 @@ impl Triangle {
         p1: Vec3,
         p2: Vec3,
         p3: Vec3,
-        material: Box<dyn Material + Send + Sync>,
+        material: Arc<Box<dyn Material + Send + Sync>>,
     ) -> Triangle {
         let v1 = p2 - p1;
         let v2 = p3 - p1;
