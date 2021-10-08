@@ -1,5 +1,5 @@
-use crate::geometry::vec3::Vec3;
 use crate::geometry::ray::Ray;
+use crate::geometry::vec3::Vec3;
 
 pub struct AabbBoundingBox {
     pub(crate) min_point: Vec3,

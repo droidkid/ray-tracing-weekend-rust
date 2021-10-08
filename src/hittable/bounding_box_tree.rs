@@ -1,13 +1,13 @@
+use crate::geometry::ray::Ray;
+use crate::geometry::vec3::Vec3;
 use crate::hittable::bounding_box::AabbBoundingBox;
-use crate::hittable::hittable::{Hittable, HitRecord};
+use crate::hittable::hittable::{HitRecord, Hittable};
+use image::hdr::HdrImageDecoderIterator;
+use rand::Rng;
 use std::cmp::Ordering::Less;
 use std::rc::Rc;
-use std::sync::Arc;
-use crate::geometry::vec3::Vec3;
-use image::hdr::HdrImageDecoderIterator;
-use crate::geometry::ray::Ray;
-use rand::Rng;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 
 pub static COUNTER: AtomicUsize = AtomicUsize::new(0);
 
@@ -18,9 +18,11 @@ pub struct BoundingBoxTree {
     objects: Vec<Arc<Box<dyn Hittable + Send + Sync>>>,
 }
 
-
 impl BoundingBoxTree {
-    pub fn new(objects: &[Arc<Box<dyn Hittable + Send + Sync>>], leaf_size: usize) -> BoundingBoxTree {
+    pub fn new(
+        objects: &[Arc<Box<dyn Hittable + Send + Sync>>],
+        leaf_size: usize,
+    ) -> BoundingBoxTree {
         // Sort by a random axis.
         let mut sorted_objects = vec![];
         for object in objects {
@@ -29,9 +31,7 @@ impl BoundingBoxTree {
         let mut rng = rand::thread_rng();
         let choose_axis = rng.gen_range(0..3);
         sorted_objects.sort_by(|a, b| {
-            a.get_bounding_box()
-                .min_point
-                .as_slice()[choose_axis]
+            a.get_bounding_box().min_point.as_slice()[choose_axis]
                 .partial_cmp(&b.get_bounding_box().min_point.as_slice()[choose_axis])
                 .unwrap_or(Less)
         });
@@ -112,14 +112,14 @@ impl Hittable for BoundingBoxTree {
             Some(left_hit)
         } else {
             Some(right_hit)
-        }
+        };
     }
 
     fn get_bounding_box(&self) -> AabbBoundingBox {
         let b = self.aabb_bounding_box.as_ref().unwrap();
         AabbBoundingBox {
             min_point: Vec3::new(b.min_point.x(), b.min_point.y(), b.min_point.z()),
-            max_point: Vec3::new(b.max_point.x(), b.max_point.y(), b.max_point.z())
+            max_point: Vec3::new(b.max_point.x(), b.max_point.y(), b.max_point.z()),
         }
     }
 }
@@ -144,7 +144,7 @@ fn build_bounding_box(objects: &[Arc<Box<dyn Hittable + Send + Sync>>]) -> AabbB
     }
 
     AabbBoundingBox {
-        min_point : Vec3::new(min_x, min_y, min_z),
-        max_point : Vec3::new(max_x, max_y, max_z),
+        min_point: Vec3::new(min_x, min_y, min_z),
+        max_point: Vec3::new(max_x, max_y, max_z),
     }
 }
