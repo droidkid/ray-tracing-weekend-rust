@@ -60,6 +60,17 @@ impl Hittable for Triangle {
             d >= 0.0
         }
 
+        let v1 = self.p2 - self.p1;
+        let v2 = self.p3 - self.p1;
+        let v3 = hit_point - self.p1;
+
+        let area = cross(&v1, &v2).len();
+        let a1 = cross(&v1, &v3).len();
+        let a2 = cross(&v2, &v3).len();
+
+        let u = a1 / area;
+        let v = a2 / area;
+
         if same_side(self.p1, hit_point, self.p2, self.p3)
             && same_side(self.p2, hit_point, self.p3, self.p1)
             && same_side(self.p3, hit_point, self.p1, self.p2)
@@ -73,8 +84,8 @@ impl Hittable for Triangle {
                 },
                 front_face: true,
                 t,
-                u: 0.0, // TODO(): implement
-                v: 0.0, // TODO(): implement!
+                u,
+                v,
                 material: Arc::new(&Box::new(&self.material)),
             })
         } else {

@@ -53,8 +53,9 @@ fn cubes_and_spheres_scene() {
         img_height,
     );
 
-    let grey: Arc<Box<dyn Material + Send + Sync>> =
-        Arc::new(Box::new(Lambertian::new_from_color(Color::new(0.5, 0.5, 0.5))));
+    let grey: Arc<Box<dyn Material + Send + Sync>> = Arc::new(Box::new(
+        Lambertian::new_from_color(Color::new(0.5, 0.5, 0.5)),
+    ));
     let white: Arc<Box<dyn Material + Send + Sync>> =
         Arc::new(Box::new(Metal::new(Color::white(), 0.1)));
     let earth_texture: Arc<Box<dyn Material + Send + Sync>> = Arc::new(Box::new(
@@ -86,7 +87,7 @@ fn cubes_and_spheres_scene() {
         Vec3::new(-8.0, 4.0, 0.0),
         3.0,
         Vec3::new(1.0, 1.0, 0.5),
-        Arc::clone(&white)
+        Arc::clone(&white),
     );
 
     let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![
@@ -118,22 +119,21 @@ fn cubes_and_spheres_scene() {
                 material = Arc::new(Box::new(Dielectric::new(1.5)));
             }
 
-
             let choose_cube = rng.gen::<f64>();
-            let object:  Box<dyn Hittable + Send + Sync>;
+            let object: Box<dyn Hittable + Send + Sync>;
 
             if choose_cube < 0.1 {
                 object = Box::new(Cube::new(
                     center,
                     0.3,
                     Vec3::new(1.0, 0.5, 0.0),
-                    Arc::clone(&material)
+                    Arc::clone(&material),
                 ));
             } else {
                 object = Box::new(Sphere {
                     center,
                     radius: 0.2,
-                    material: Arc::clone(&material)
+                    material: Arc::clone(&material),
                 });
             }
 
@@ -221,7 +221,7 @@ fn cornell_box_scene() {
         100.0,
         150.0,
         100.0,
-        Arc::clone(&white)
+        Arc::clone(&white),
     );
 
     let cube2 = Cube::newCuboid(
@@ -230,7 +230,7 @@ fn cornell_box_scene() {
         100.0,
         300.0,
         100.0,
-        Arc::clone(&white)
+        Arc::clone(&white),
     );
 
     let objects: Vec<Box<dyn Hittable + Sync + Send>> = vec![
@@ -284,6 +284,93 @@ fn cornell_box_scene() {
     );
 }
 
+fn die_box_scene() {
+    let back_wall_material: Arc<Box<dyn Material + Send + Sync>> =
+        Arc::new(Box::new(Metal::new(Color::new(0.7, 0.7, 0.7), 0.01)));
+
+
+    let back_wall = Quad::new(
+        Vec3::new(-5050.0, 10555.0, 6055.0),
+        Vec3::new(55055.0, 10555.0, 6055.0),
+        Vec3::new(55055.0, -1000.0, 0.0),
+        Vec3::new(-5050.0, -1000.0, 0.0),
+        &back_wall_material,
+    );
+
+
+    let bottom_wall = Quad::new_lambertian(
+        Vec3::new(-5000.0, 0.0, 0.0),
+        Vec3::new(-5000.0, 0.0, 555.0),
+        Vec3::new(5555.0, 0.0, 555.0),
+        Vec3::new(5555.0, 0.0, 0.0),
+        Color::new(0.65, 0.12, 0.12),
+    );
+
+    let cube1 = Cube::new_mapped_cube(
+        "uv-map.png",
+        Vec3::new(138.0, 225.0, 230.0),
+        Vec3::new(200.0, 105.0, 300.0),
+        200.0,
+        250.0,
+        250.0,
+    );
+
+    let cube2 = Cube::new_mapped_cube(
+        "uv-map-2.png",
+        Vec3::new(500.0, 350.0, 330.0),
+        Vec3::new(200.0, 500.0, 200.0),
+        150.0,
+        270.0,
+        200.0,
+    );
+
+    let objects: Vec<Box<dyn Hittable + Sync + Send>> = vec![
+        Box::new(bottom_wall),
+        Box::new(back_wall),
+        Box::new(cube1),
+        Box::new(cube2),
+    ];
+
+    // Camera & Viewport
+    let aspect_ratio = 1.0;
+    let img_width = 600;
+    let img_height = (img_width as f64 / aspect_ratio) as u32;
+    let samples_per_pixel: u32 = 200;
+    let recursive_depth: u32 = 100;
+    let num_threads = 16;
+
+    let camera = Camera::camera(
+        Vec3::new(278.0, 278.0, -800.0),
+        Vec3::new(278.0, 278.0, 0.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        0.1,
+        800.0,
+        40.0,
+        aspect_ratio,
+        img_width,
+        img_height,
+    );
+
+    let world = World::new(objects);
+
+    let now = Instant::now();
+    world::world::render(
+        world,
+        "die_scene.png",
+        &camera,
+        samples_per_pixel,
+        recursive_depth,
+        num_threads,
+        Color::white(),
+    );
+    let elapsed = now.elapsed();
+    println!("Wrote render.png in {} seconds", elapsed.as_secs());
+    println!(
+        "Intersection Count: {}",
+        hittable::bounding_box_tree::COUNTER.fetch_add(0, Ordering::Relaxed)
+    );
+}
+
 fn main() {
-    cornell_box_scene();
+    die_box_scene();
 }

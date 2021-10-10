@@ -16,9 +16,24 @@ pub struct Quad {
 }
 
 impl Quad {
+    pub fn new(
+        p1: Vec3,
+        p2: Vec3,
+        p3: Vec3,
+        p4: Vec3,
+        material: &Arc<Box<dyn Material + Send + Sync>>,
+    ) -> Quad {
+        // TODO(chesetti): Rotate points in clockwise manner around p1.
+        Quad {
+            triangle1: Triangle::new(p1, p2, p3, Arc::clone(&material)),
+            triangle2: Triangle::new(p1, p3, p4, Arc::clone(&material)),
+        }
+    }
+
     pub fn new_lambertian(p1: Vec3, p2: Vec3, p3: Vec3, p4: Vec3, color: Color) -> Quad {
         // TODO(chesetti): Rotate points in clockwise manner around p1.
-        let material: Arc<Box<dyn Material + Send + Sync>> = Arc::new(Box::new(Lambertian::new_from_color(color)));
+        let material: Arc<Box<dyn Material + Send + Sync>> =
+            Arc::new(Box::new(Lambertian::new_from_color(color)));
         Quad {
             triangle1: Triangle::new(p1, p2, p3, Arc::clone(&material)),
             triangle2: Triangle::new(p1, p3, p4, Arc::clone(&material)),
@@ -26,10 +41,11 @@ impl Quad {
     }
 
     pub fn new_diffuse_light(p1: Vec3, p2: Vec3, p3: Vec3, p4: Vec3, color: Color) -> Quad {
-        let material: Arc<Box<dyn Material + Send + Sync>> = Arc::new(Box::new(DiffuseLight::new(color)));
+        let material: Arc<Box<dyn Material + Send + Sync>> =
+            Arc::new(Box::new(DiffuseLight::new(color)));
         Quad {
             triangle1: Triangle::new(p1, p2, p3, Arc::clone(&material)),
-            triangle2: Triangle::new(p1, p3, p4,  Arc::clone(&material)),
+            triangle2: Triangle::new(p1, p3, p4, Arc::clone(&material)),
         }
     }
 }
