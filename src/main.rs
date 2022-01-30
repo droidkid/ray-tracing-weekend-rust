@@ -16,6 +16,7 @@ use world::camera::Camera;
 use crate::hittable::bounding_box_tree::BoundingBoxTree;
 use crate::hittable::cube::Cube;
 use crate::hittable::hittable::Hittable;
+use crate::hittable::triangle::Triangle;
 use crate::material::checkered_texture::CheckeredTexture;
 use crate::material::dielectric::Dielectric;
 use crate::material::image_texture::ImageTexture;
@@ -24,6 +25,7 @@ use crate::material::material::Material;
 use crate::material::metal::Metal;
 use crate::world::world::World;
 use std::fmt::Debug;
+use std::fs;
 use std::path::Path;
 use std::sync::atomic::Ordering;
 
@@ -31,6 +33,51 @@ mod geometry;
 mod hittable;
 mod material;
 mod world;
+
+fn load_obj(file: &str) -> Vec<Box<dyn Hittable + Send + Sync>> {
+    let contents = fs::read_to_string(file).expect("Error Reading filename");
+    let lines = contents.split("\n");
+    let mut vertices: Vec<Vec3> = vec![];
+
+    for line in lines.into_iter() {
+        if line.starts_with("v ") {
+            let points = line.split(" ").collect::<Vec<&str>>();
+
+            let x = points[1].trim().parse::<f64>().unwrap();
+            let y = points[2].trim().parse::<f64>().unwrap();
+            let z = points[3].trim().parse::<f64>().unwrap();
+
+            vertices.push(Vec3::new(x, y, z));
+        }
+    }
+    let contents = fs::read_to_string(file).expect("Error Reading filename");
+    let lines = contents.split("\n");
+
+    let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = vec![];
+    let grey: Arc<Box<dyn Material + Send + Sync>> = Arc::new(Box::new(
+        Lambertian::new_from_color(Color::new(0.5, 0.5, 0.5)),
+    ));
+
+    for line in lines.into_iter() {
+        if line.starts_with("f ") {
+            let points = line.split(" ").collect::<Vec<&str>>();
+            let mut v: Vec<usize> = vec![];
+            for i in 1..4 {
+                let point_details = points[i].split("/").collect::<Vec<&str>>();
+                v.push(point_details[0].trim().parse::<usize>().unwrap());
+            }
+
+            objects.push(Box::new(Triangle::new(
+                vertices[v[0] - 1],
+                vertices[v[1] - 1],
+                vertices[v[2] - 1],
+                Arc::clone(&grey),
+            )));
+        }
+    }
+
+    objects
+}
 
 fn cubes_and_spheres_scene() {
     // Camera & Viewport
@@ -288,7 +335,6 @@ fn die_box_scene() {
     let back_wall_material: Arc<Box<dyn Material + Send + Sync>> =
         Arc::new(Box::new(Metal::new(Color::new(0.7, 0.7, 0.7), 0.01)));
 
-
     let back_wall = Quad::new(
         Vec3::new(-5050.0, 10555.0, 6055.0),
         Vec3::new(55055.0, 10555.0, 6055.0),
@@ -296,7 +342,6 @@ fn die_box_scene() {
         Vec3::new(-5050.0, -1000.0, 0.0),
         &back_wall_material,
     );
-
 
     let bottom_wall = Quad::new_lambertian(
         Vec3::new(-5000.0, 0.0, 0.0),
@@ -371,6 +416,65 @@ fn die_box_scene() {
     );
 }
 
+fn object_loader_scene(obj_file: &str) {
+    // Camera & Viewport
+    let aspect_ratio = 3.0 / 2.0;
+    let img_width = 300;
+    let img_height = (img_width as f64 / aspect_ratio) as u32;
+    let samples_per_pixel: u32 = 100;
+    let recursive_depth: u32 = 100;
+    let num_threads = 16;
+
+    let camera = Camera::camera(
+        Vec3::new(0.0, 0.0, 5.0),
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        0.1,
+        5.0,
+        50.0,
+        aspect_ratio,
+        img_width,
+        img_height,
+    );
+
+    let grey: Arc<Box<dyn Material + Send + Sync>> = Arc::new(Box::new(
+        Lambertian::new_from_color(Color::new(0.5, 0.5, 0.5)),
+    ));
+
+    let ground = Sphere {
+        center: Vec3::new(0.0, -7.0, 0.0),
+        radius: 6.0,
+        material: Arc::clone(&grey),
+    };
+
+    let mut objects: Vec<Box<dyn Hittable + Send + Sync>> = load_obj(obj_file);
+    objects.push(Box::new(ground));
+
+    let num_objects = objects.len();
+    println!("Num Objects: {}", num_objects);
+
+    let world = World::new(objects);
+    println!("Starting rendering!: {}", num_objects);
+
+    let now = Instant::now();
+    world::world::render(
+        world,
+        "face.png",
+        &camera,
+        samples_per_pixel,
+        recursive_depth,
+        num_threads,
+        Color::white(),
+    );
+    let elapsed = now.elapsed();
+    println!("Wrote render.png in {} seconds", elapsed.as_secs());
+    println!(
+        "Intersection Count: {}",
+        hittable::bounding_box_tree::COUNTER.fetch_add(0, Ordering::Relaxed)
+    );
+}
+
 fn main() {
-    die_box_scene();
+    // TODO(chesetti): Add an argument that lets you choose what scene to render.
+    object_loader_scene("head.obj");
 }

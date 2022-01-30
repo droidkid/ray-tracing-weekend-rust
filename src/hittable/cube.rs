@@ -9,9 +9,9 @@ use crate::material::material::Material;
 use crate::material::metal::Metal;
 use crate::material::texture::Texture;
 use crate::material::triangle_image_texture::TriangleImageTexture;
-use std::sync::Arc;
 use image::io::Reader as ImageReader;
 use image::GenericImageView;
+use std::sync::Arc;
 
 pub struct Cube {
     forward: Vec3,
@@ -80,7 +80,14 @@ impl Cube {
         }
     }
 
-    pub fn new_mapped_cube(img_path: &str, center: Vec3, to: Vec3, width: f64, height: f64, depth: f64) -> Cube {
+    pub fn new_mapped_cube(
+        img_path: &str,
+        center: Vec3,
+        to: Vec3,
+        width: f64,
+        height: f64,
+        depth: f64,
+    ) -> Cube {
         let vup = Vec3::new(0.0, 1.0, 0.0);
         let forward = (center - to).normalize();
         let right: Vec3 = cross(&vup, &forward).normalize();
@@ -203,7 +210,12 @@ fn build_points(forward: Vec3, right: Vec3, up: Vec3, center: Vec3) -> Vec<Vec3>
     ]
 }
 
-fn build_uv_mapped_triangle(img_path: &str, x: u32, y: u32, is_bot: bool) -> Arc<Box<dyn Material + Send + Sync>> {
+fn build_uv_mapped_triangle(
+    img_path: &str,
+    x: u32,
+    y: u32,
+    is_bot: bool,
+) -> Arc<Box<dyn Material + Send + Sync>> {
     // TODO(chesetti): Send reference to image instead of reading everytime?
     let img = ImageReader::open(img_path).unwrap().decode().unwrap();
     let width = img.width();
@@ -214,11 +226,10 @@ fn build_uv_mapped_triangle(img_path: &str, x: u32, y: u32, is_bot: bool) -> Arc
 
     // The triangles are all right angled.
     let xmin = (x * sq_width) as f64;
-    let ymin =  (y * sq_height) as f64;
+    let ymin = (y * sq_height) as f64;
 
-    let xmax = ((x+1) * sq_width) as f64;
-    let ymax = ((y+1) * sq_height) as f64;
-
+    let xmax = ((x + 1) * sq_width) as f64;
+    let ymax = ((y + 1) * sq_height) as f64;
 
     let triangle_texture: Box<dyn Texture + Send + Sync>;
     if is_bot {
@@ -229,7 +240,7 @@ fn build_uv_mapped_triangle(img_path: &str, x: u32, y: u32, is_bot: bool) -> Arc
             Vec3::new(xmin, ymin, 0.0),
         ));
     } else {
-        triangle_texture  = Box::new(TriangleImageTexture::new(
+        triangle_texture = Box::new(TriangleImageTexture::new(
             img_path,
             Vec3::new(xmax, ymin, 0.0),
             Vec3::new(xmax, ymax, 0.0),
@@ -243,22 +254,94 @@ fn build_uv_mapped_triangle(img_path: &str, x: u32, y: u32, is_bot: bool) -> Arc
 fn build_die_material(img_path: &str, points: &Vec<Vec3>) -> Vec<Triangle> {
     vec![
         // Face 1
-        build_triangle(&points, 1, 3, 2, &build_uv_mapped_triangle(img_path, 0, 1, false)),
-        build_triangle(&points, 4, 3, 2, &build_uv_mapped_triangle(img_path, 0, 1, true)),
+        build_triangle(
+            &points,
+            1,
+            3,
+            2,
+            &build_uv_mapped_triangle(img_path, 0, 1, false),
+        ),
+        build_triangle(
+            &points,
+            4,
+            3,
+            2,
+            &build_uv_mapped_triangle(img_path, 0, 1, true),
+        ),
         // Face 2
-        build_triangle(&points, 7, 5, 8, &build_uv_mapped_triangle(img_path, 1, 1, false)),
-        build_triangle(&points, 6, 5, 8, &build_uv_mapped_triangle(img_path, 1, 1, true )),
+        build_triangle(
+            &points,
+            7,
+            5,
+            8,
+            &build_uv_mapped_triangle(img_path, 1, 1, false),
+        ),
+        build_triangle(
+            &points,
+            6,
+            5,
+            8,
+            &build_uv_mapped_triangle(img_path, 1, 1, true),
+        ),
         // Face 3
-        build_triangle(&points, 6, 2, 8, &build_uv_mapped_triangle(img_path, 2, 0, false )),
-        build_triangle(&points, 4, 2, 8, &build_uv_mapped_triangle(img_path, 2, 0, true )),
+        build_triangle(
+            &points,
+            6,
+            2,
+            8,
+            &build_uv_mapped_triangle(img_path, 2, 0, false),
+        ),
+        build_triangle(
+            &points,
+            4,
+            2,
+            8,
+            &build_uv_mapped_triangle(img_path, 2, 0, true),
+        ),
         // Face 4
-        build_triangle(&points, 5, 1, 7, &build_uv_mapped_triangle(img_path, 2, 2, false)),
-        build_triangle(&points, 3, 1, 7, &build_uv_mapped_triangle(img_path, 2, 2, true )),
+        build_triangle(
+            &points,
+            5,
+            1,
+            7,
+            &build_uv_mapped_triangle(img_path, 2, 2, false),
+        ),
+        build_triangle(
+            &points,
+            3,
+            1,
+            7,
+            &build_uv_mapped_triangle(img_path, 2, 2, true),
+        ),
         // Face 5
-        build_triangle(&points, 5, 1, 6, &build_uv_mapped_triangle(img_path, 2, 1, false)),
-        build_triangle(&points, 2, 1, 6, &build_uv_mapped_triangle(img_path, 2, 1, true )),
+        build_triangle(
+            &points,
+            5,
+            1,
+            6,
+            &build_uv_mapped_triangle(img_path, 2, 1, false),
+        ),
+        build_triangle(
+            &points,
+            2,
+            1,
+            6,
+            &build_uv_mapped_triangle(img_path, 2, 1, true),
+        ),
         // Face 6
-        build_triangle(&points, 3, 7, 4, &build_uv_mapped_triangle(img_path, 3, 1, false)),
-        build_triangle(&points, 8, 7, 4, &build_uv_mapped_triangle(img_path, 3, 1, true )),
+        build_triangle(
+            &points,
+            3,
+            7,
+            4,
+            &build_uv_mapped_triangle(img_path, 3, 1, false),
+        ),
+        build_triangle(
+            &points,
+            8,
+            7,
+            4,
+            &build_uv_mapped_triangle(img_path, 3, 1, true),
+        ),
     ]
 }

@@ -8,6 +8,9 @@ use std::cmp::Ordering::Less;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
+use crate::material::color::Color;
+use crate::material::lambertian::Lambertian;
+use crate::material::material::Material;
 
 pub static COUNTER: AtomicUsize = AtomicUsize::new(0);
 
@@ -47,9 +50,9 @@ impl BoundingBoxTree {
 
         let mid = sorted_objects.len() / 2;
         let left: Option<Box<BoundingBoxTree>> =
-            Some(Box::new(BoundingBoxTree::new(&objects[0..mid], leaf_size)));
+            Some(Box::new(BoundingBoxTree::new(&sorted_objects[0..mid], leaf_size)));
         let right: Option<Box<BoundingBoxTree>> =
-            Some(Box::new(BoundingBoxTree::new(&objects[mid..], leaf_size)));
+            Some(Box::new(BoundingBoxTree::new(&sorted_objects[mid..], leaf_size)));
 
         BoundingBoxTree {
             aabb_bounding_box: Some(build_bounding_box(objects)),

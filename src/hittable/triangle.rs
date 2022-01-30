@@ -94,13 +94,14 @@ impl Hittable for Triangle {
     }
 
     fn get_bounding_box(&self) -> AabbBoundingBox {
+        let n = 0.00001 * self.normal.normalize();
         let points = vec![
-            self.p1 + self.normal,
-            self.p1 - self.normal,
-            self.p2 + self.normal,
-            self.p2 - self.normal,
-            self.p3 + self.normal,
-            self.p3 - self.normal,
+            self.p1 + n,
+            self.p1 - n,
+            self.p2 + n,
+            self.p2 - n,
+            self.p3 + n,
+            self.p3 - n,
         ];
 
         let mut min_x = points[0].x();
