@@ -14,4 +14,4 @@ The scene and
 
 ![Mapped Cubes](renders/mapped_cubes.png)
 
-![Loading OBJ files](renders/monkey.pngV)
+![Loading OBJ files](renders/monkey.png)
